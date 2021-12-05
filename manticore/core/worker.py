@@ -49,7 +49,12 @@ class Worker:
     different events: start, stop, kill.
     The events are transmitted via 2 conditional variable: m._killed and
     m._started.
-
+    一个怪兽工人。
+    这可能会在不同的进程中永远运行。
+    通常它会在蝎尾怪物的构造器中生成，并且在被杀死之前一直存活。
+    Worker可以分为3个阶段:STANDBY、RUNNING、KILLED。
+    并且会对不同的事件做出反应:开始，停止，杀死。
+    事件通过两个条件变量传送:m._killed和m._started。
     .. code-block:: none
 
         STANDBY:   Waiting for the start event
