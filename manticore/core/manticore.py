@@ -432,7 +432,7 @@ class ManticoreBase(Eventful):
     @sync
     @only_from_main_script
     def take_snapshot(self):
-        """Copy/Duplicate/backup all ready states and save it in a snapshot.
+        """Copy/Duplicate/backup all ready states and save it in a snapshot.拷贝/复制/备份所有就绪状态，并保存在一个快照中。
         If there is a snapshot already saved it will be overrwritten如果已经保存了快照，则将覆盖该快照
         """
         if self._snapshot is not None:
@@ -447,7 +447,7 @@ class ManticoreBase(Eventful):
     @sync
     @only_from_main_script
     def goto_snapshot(self):
-        """REMOVE current ready states and replace them with the saved states
+        """REMOVE current ready states and replace them with the saved states移除当前准备状态，并将其替换为快照中保存的状态
         in a snapshot"""
         if not self._snapshot:
             raise ManticoreError("No snapshot to go to")
@@ -461,7 +461,7 @@ class ManticoreBase(Eventful):
     @sync
     @only_from_main_script
     def clear_snapshot(self):
-        """ Remove any saved states """
+        """ Remove any saved states """删除所有保存的状态
         if self._snapshot:
             for state_id in self._snapshot:
                 self._remove(state_id)
@@ -470,7 +470,7 @@ class ManticoreBase(Eventful):
     @sync
     @at_not_running
     def clear_terminated_states(self):
-        """ Remove all states from the terminated list """
+        """ Remove all states from the terminated list """"""从终止列表中删除所有状态"""
         terminated_states_ids = tuple(self._terminated_states)
         for state_id in terminated_states_ids:
             self._terminated_states.remove(state_id)
@@ -480,7 +480,7 @@ class ManticoreBase(Eventful):
     @sync
     @at_not_running
     def clear_ready_states(self):
-        """ Remove all states from the ready list """
+        """ Remove all states from the ready list """"""从准备列表中删除所有状态"""
         ready_states_ids = tuple(self._ready_states)
         for state_id in ready_states_ids:
             self._ready_states.remove(state_id)
@@ -493,12 +493,12 @@ class ManticoreBase(Eventful):
     @classmethod
     def from_saved_state(cls, filename: str, *args, **kwargs):
         """
-        Creates a Manticore object starting from a serialized state on the disk.
+        Creates a Manticore object starting from a serialized state on the disk.从磁盘上的序列化状态开始创建Manticore对象。
 
         :param filename: File to load the state from
         :param args: Arguments forwarded to the Manticore object
         :param kwargs: Keyword args forwarded to the Manticore object
-        :return: An instance of a subclass of ManticoreBase with the given initial state
+        :return: An instance of a subclass of ManticoreBase with the given initial state:给定初始状态的ManticoreBase子类的实例
         """
         from ..utils.helpers import PickleSerializer
 
@@ -523,10 +523,10 @@ class ManticoreBase(Eventful):
                setstate(True)                   setstate(False)
 
         The optional setstate() function is supposed to set the concrete value
-        in the child state.
+        in the child state.可选的setstate()函数用于设置子状态中的具体值。
 
         Parent state is removed from the busy list and the child states are added
-        to the ready list.
+        to the ready list.父状态从繁忙列表中删除，子状态添加到就绪列表中。
 
         """
         assert isinstance(expression, Expression), f"{type(expression)} is not an Expression"
@@ -536,7 +536,7 @@ class ManticoreBase(Eventful):
             def setstate(x, y):
                 pass
 
-        # Find a set of solutions for expression
+        # Find a set of solutions for expression#找到表达式的一组解
         solutions = state.concretize(expression, policy)
 
         if not solutions:
