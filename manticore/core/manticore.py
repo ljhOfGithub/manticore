@@ -433,14 +433,14 @@ class ManticoreBase(Eventful):
     @only_from_main_script
     def take_snapshot(self):
         """Copy/Duplicate/backup all ready states and save it in a snapshot.
-        If there is a snapshot already saved it will be overrwritten
+        If there is a snapshot already saved it will be overrwritten如果已经保存了快照，则将覆盖该快照
         """
         if self._snapshot is not None:
             logger.info("Overwriting a snapshot of the ready states")
         snapshot = []
         for state_id in self._ready_states:
             state = self._load(state_id)
-            # Re-save the state in case the user changed its data
+            # Re-save the state in case the user changed its data重新保存状态，以防用户更改其数据
             snapshot.append(self._save(state))
         self._snapshot = snapshot
 
