@@ -784,7 +784,7 @@ class ManticoreBase(Eventful):
     def kill_state(self, state: typing.Union[StateBase, int], delete: bool = False):
         """Kill a state.
          A state is moved from any list to the kill list or fully
-         removed from secondary storage
+         removed from secondary storage杀死一个状态。将状态从任何列表移到终止列表或从二级存储中完全删除
 
         :param state: a state
         :param delete: if true remove the state from the secondary storage
@@ -821,6 +821,13 @@ class ManticoreBase(Eventful):
         as we re-save the state when the generator comes back to the function.
 
         This means it is not possible to change the state used by Manticore with `states = list(m.ready_states)`.
+        迭代器遍历就绪状态。
+        它支持状态更改。
+        状态更改将在每次迭代时保存回来。
+        状态数据的更改必须在循环中完成，例如，' for state in ready_states:。
+        当生成器返回函数时，我们重新保存状态。
+        这意味着不可能使用' states = list(m.ready_states)来更改Manticore使用的状态。
+
         """
         _ready_states = self._ready_states
         for state_id in _ready_states:
@@ -862,16 +869,16 @@ class ManticoreBase(Eventful):
         for state_id in self._killed_states:
             state = self._load(state_id)
             yield state
-            # Re-save the state in case the user changed its data
+            # Re-save the state in case the user changed its data#重新保存状态，以防用户更改其数据
             self._save(state, state_id=state_id)
 
     @property  # type: ignore
     @sync
     @at_not_running
     def _all_states(self):
-        """Only allowed at not running.
-        (At running we can have states at busy)
-        Returns a tuple with all active state ids.
+        """Only allowed at not running.非运行状态
+        (At running we can have states at busy)运行时状态为busy
+        Returns a tuple with all active state ids.返回一个包含所有活动状态id的元组。
         Notably the "killed" states are not included here.
         """
         return tuple(self._ready_states) + tuple(self._terminated_states)
@@ -886,11 +893,15 @@ class ManticoreBase(Eventful):
         Notably the cancelled states are not included here.
 
         See also `ready_states`.
+        遍历所有状态(就绪和终止)
+        它持有一个锁，所以不允许改变状态列表
+        值得注意的是，被取消的状态不在这里。
+        参见“ready_states”。
         """
         for state_id in self._all_states:
             state = self._load(state_id)
             yield state
-            # Re-save the state in case the user changed its data
+            # Re-save the state in case the user changed its data#重新保存状态，以防用户更改其数据
             self._save(state, state_id=state_id)
 
     @sync
