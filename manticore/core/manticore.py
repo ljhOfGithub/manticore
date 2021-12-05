@@ -1126,6 +1126,8 @@ class ManticoreBase(Eventful):
         # If there are still states in the BUSY list then the STOP/KILL event
         # was not yet answered
         # We know that BUSY states can only decrease after a kill is requested
+        #如果BUSY列表中仍然有状态，那么STOP/KILL事件还没有响应
+        #我们知道，BUSY状态只能在请求KILL后减少
         return self._killed.value
 
     @property
@@ -1135,7 +1137,7 @@ class ManticoreBase(Eventful):
     @contextmanager
     def kill_timeout(self, timeout=None):
         """A convenient context manager that will kill a manticore run after
-        timeout seconds
+        timeout seconds一个方便的上下文管理器，它将在超时后终止manticore运行
         """
         if timeout is None:
             timeout = consts.timeout
@@ -1147,7 +1149,7 @@ class ManticoreBase(Eventful):
             finally:
                 return
 
-        # THINKME kill grabs the lock. Is npt this a deadlock hazard?
+        # THINKME kill grabs the lock. Is npt this a deadlock hazard?# THINKME杀手抓住了锁。npt是否存在死锁风险?
         timer = threading.Timer(timeout, self.kill)
         timer.start()
 
@@ -1161,19 +1163,20 @@ class ManticoreBase(Eventful):
         """
         Runs analysis.
         """
-        # Start measuring the execution time
+        # Start measuring the execution time#开始测量执行时间
         with self.locked_context() as context:
             context["time_started"] = time.time()
 
         # Delete state cache
         # The cached version of a state may get out of sync if a worker in a
-        # different process modifies the state
+        # different process modifies the state删除状态缓存#如果在不同进程中的工作线程修改了某个状态，该状态的缓存版本可能会失去同步
         self.stcache = weakref.WeakValueDictionary()
 
         # Lazy process start. At the first run() the workers are not forked.
-        # This actually starts the worker procs/threads
+        # This actually starts the worker procs/threads启动懒惰进程。在第一次运行()时，工人没有分叉。
+        #实际启动工作进程/线程
         if self.subscribe:
-            # User subscription to events is disabled from now on
+            # User subscription to events is disabled from now on#用户订阅事件从现在开始被禁用
             self.subscribe = None
 
         self.register_daemon(state_monitor)
@@ -1181,6 +1184,7 @@ class ManticoreBase(Eventful):
 
         # Passing generators to callbacks is a bit hairy because the first callback would drain it if we didn't
         # clone the iterator in event.py. We're preserving the old API here, but it's something to avoid in the future.
+        # 将生成器传递给回调函数有点麻烦，因为如果我们没有在event.py中克隆迭代器，第一个回调函数就会耗尽它。我们在这里保留了旧的API，但这是将来要避免的。
         self._publish("will_run", self.ready_states)
         self._running.value = True
 
@@ -1189,10 +1193,11 @@ class ManticoreBase(Eventful):
             w.start()
 
         # Create each daemon thread and pass it `self`
+        #创建每个守护线程，并传递给它' self '
         for i, cb in enumerate(self._daemon_callbacks):
             if (
                 i not in self._daemon_threads
-            ):  # Don't recreate the threads if we call run multiple times
+            ):  # Don't recreate the threads if we call run multiple times#如果我们多次调用run，不要重新创建线程
                 dt = DaemonThread(
                     id=i, manticore=self
                 )  # Potentially duplicated ids with workers. Don't mix!
