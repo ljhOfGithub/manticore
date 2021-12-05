@@ -167,7 +167,7 @@ class ManticoreBase(Eventful):
 
     def at_not_running(func: Callable) -> Callable:  # type: ignore
         """Allows the decorated method to run only when manticore is NOT
-        exploring states
+        exploring states允许修饰的方法只在manticore处于NOT探索状态时运行
         """
 
         @functools.wraps(func)
@@ -180,7 +180,7 @@ class ManticoreBase(Eventful):
         return newFunction
 
     def only_from_main_script(func: Callable) -> Callable:  # type: ignore
-        """Allows the decorated method to run only from the main manticore script"""
+        """Allows the decorated method to run only from the main manticore script允许修饰过的方法只从主manticore脚本运行"""
 
         @functools.wraps(func)
         def newFunction(self, *args, **kw):
@@ -236,14 +236,14 @@ class ManticoreBase(Eventful):
         Manticore starts at STANDBY with a single initial state. Here the user
         can inspect, modify and generate testcases for the different states. The
         workers are paused and not doing any work. Actions: run()
-
+        Manticore以STANDBY启动，只有一个初始状态。在这里，用户可以检查、修改和生成不同状态的测试用例。工人们暂停工作，不做任何工作。
 
         *Phase RUNNING*
 
         At RUNNING the workers consume states from the READY state list and
         potentially fork new states or terminate states. A RUNNING manticore can
         be stopped back to STANDBY. Actions: stop()
-
+        在运行时，工作人员从READY状态列表中消费状态，并可能fork新的状态或终止状态。正在运行的蝎尾可以停止到STANDBY状态。
 
         **States and state lists**
 
@@ -252,7 +252,9 @@ class ManticoreBase(Eventful):
         Manticore associates a fresh id with each saved state. The memory copy
         of the state is then changed by the emulation of the specific arch.
         Stored snapshots are periodically updated using: _save() and _load().
-
+        状态包含给定时刻运行程序的所有信息。状态快照经常保存到工作区中。
+        在内部，Manticore将一个新的id与每个保存的状态关联起来。
+        然后通过模拟特定的arch来改变状态的内存副本。使用_save()和_load()定期更新存储的快照。
         .. code-block:: none
 
                       _save     +-------------+  _load
@@ -260,7 +262,7 @@ class ManticoreBase(Eventful):
                                 +-------------+
 
         During exploration Manticore spawns a number of temporary states that are
-        maintained in different lists:
+        maintained in different lists:在探索过程中，manticore产生了许多临时状态，这些状态在不同的列表中保持:
 
         .. code-block:: none
 
@@ -278,7 +280,7 @@ class ManticoreBase(Eventful):
                                                    +--------+
 
         At any given time a state must be at the READY, BUSY, TERMINATED or
-        KILLED list.
+        KILLED list.在任何给定的时间，一个状态必须在READY, BUSY, TERMINATED或KILLED列表中。
 
         *State list: READY*
 
@@ -288,7 +290,10 @@ class ManticoreBase(Eventful):
         A worker mainloop will consume states from the READY list and mark them
         as BUSYwhile working on them. States in the READY list can go to BUSY or
         KILLED
-
+        READY列表保存了所有的可运行状态。
+        在内部，一个状态通过方法' _put_state(state) '添加到READY列表中。
+        工作线程通过' _get_state(wait=True|False) '方法从READY列表中获取状态。
+        worker主循环将使用READY列表中的状态，并将它们标记为BUSYwhile。READY列表中的州可以是BUSY或KILLED
 
         *State list: BUSY*
 
@@ -300,18 +305,24 @@ class ManticoreBase(Eventful):
         KILLED or they can be {forked} back to READY. The forking process
         could involve generating new child states and removing the parent
         from all the lists.
-
+        当从READY列表中选择一个状态进行探索时，它将被标记为busy并放入busy列表中。
+        正在探索的状态将不断地被修改，并且只有在移出BUSY列表时才会被保存回存储。
+        因此，当处于BUSY时，存储的状态副本可能已经过时。
+        BUSY列表中的状态可以转到TERMINATED、KILLED，或者它们可以被{fork}返回READY。
+        fork过程可能包括生成新的子状态并从所有列表中删除父状态。
 
         *State list: TERMINATED*
 
         TERMINATED contains states that have reached a final condition and raised
         TerminateState. Worker's mainloop simply moves the states that requested
         termination to the TERMINATED list. This is a final list.
+        TERMINATED包含已达到最终条件并引发TerminateState的状态。
+        Worker的主循环只是将请求终止的状态移动到TERMINATED列表中。这是最终的清单。
 
         ```An inherited Manticore class like ManticoreEVM could internally revive
         the states in TERMINATED that pass some condition and move them back to
         READY so the user can apply a following transaction.```
-
+        像ManticoreEVM这样的继承的Manticore类可以在内部恢复TERMINATED中传递的一些条件的状态，并将它们移回READY，以便用户可以应用接下来的事务。
         *State list: KILLED*
 
         KILLED contains all the READY and BUSY states found at a cancel event.
@@ -319,11 +330,15 @@ class ManticoreBase(Eventful):
         A user can stop or cancel the exploration at any time. The unfinished
         states caught in this situation are simply moved to their own list for
         further user action. This is a final list.
-
+        kill包含在取消事件中发现的所有READY和BUSY状态。
+        Manticore支持交互分析，并有一个突出的事件系统。
+        用户可以在任何时候停止或取消探索。
+        在这种情况下捕获的未完成状态将被简单地移动到它们自己的列表中，以供进一步的用户操作。
+        这是最终的清单。
 
         :param initial_state: the initial root `State` object to start from
         :param workspace_url: workspace folder name
-        :param outputspace_url: Folder to place final output. Defaults to workspace
+        :param outputspace_url: Folder to place final output. Defaults to workspace用于放置最终输出的文件夹。默认的工作空间
         :param kwargs: other kwargs, e.g.
         """
         super().__init__()
@@ -355,6 +370,11 @@ class ManticoreBase(Eventful):
         # Manticore will use the output to save the final reports.
         # By default the output folder and the workspace folder are the same.
         # Check type, default to fs:
+        #工作区和输出
+        # Manticore将使用工作区来保存和共享临时状态。
+        # Manticore将使用输出保存最终的报告。
+        #默认情况下，输出文件夹和工作空间文件夹是相同的。
+        #检查类型，默认为fs:
         if isinstance(workspace_url, str):
             if ":" not in workspace_url:
                 workspace_url = f"fs:{workspace_url}"
@@ -362,7 +382,7 @@ class ManticoreBase(Eventful):
             if workspace_url is not None:
                 raise TypeError(f"Invalid workspace type: {type(workspace_url).__name__}")
         self._workspace = Workspace(workspace_url)
-        # reuse the same workspace if not specified
+        # reuse the same workspace if not specified#重用相同的工作空间，如果没有指定
         if outputspace_url is None:
             outputspace_url = workspace_url
         if outputspace_url is None:
@@ -374,6 +394,11 @@ class ManticoreBase(Eventful):
         # the different type of events occur over an exploration.
         # Note that each callback will run in a worker process and that some
         # careful use of the shared context is needed.
+        #已注册插件的集合
+        #在插件对象中定义的回调方法将被调用
+        #不同类型的事件发生在一个探索。
+        #注意，每个回调将在一个工作进程中运行
+        #需要谨慎使用共享上下文。
         self.plugins: typing.Dict[str, Plugin] = {}
         assert issubclass(
             introspection_plugin_type, IntrospectionAPIPlugin
@@ -390,6 +415,7 @@ class ManticoreBase(Eventful):
         self._workers = [self._worker_type(id=i, manticore=self) for i in range(nworkers)]
 
         # Create log capture worker. We won't create the rest of the daemons until .run() is called
+        #创建日志捕获工人。在调用.run()之前，我们不会创建其余的守护进程
         self._daemon_threads: typing.Dict[int, DaemonThread] = {
             -1: LogCaptureWorker(id=-1, manticore=self)
         }
