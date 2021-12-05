@@ -580,7 +580,7 @@ class ManticoreBase(Eventful):
     def verbosity(level):
         """Sets global verbosity level.
         This will activate different logging profiles globally depending
-        on the provided numeric value
+        on the provided numeric value设置全局冗长级别。这将根据提供的数值全局激活不同的日志配置文件
         """
         set_verbosity(level)
 
@@ -588,7 +588,7 @@ class ManticoreBase(Eventful):
     @Eventful.will_did("save_state", can_raise=False)
     def _save(self, state, state_id=None) -> int:
         """Store or update a state in secondary storage under state_id.
-        Use a fresh id is None is provided.
+        Use a fresh id is None is provided.在二级存储中使用state_id存储或更新状态。使用一个新鲜的id是没有提供。
 
         :param state: A manticore State
         :param state_id: if not None force state_id (overwrite)
@@ -636,7 +636,8 @@ class ManticoreBase(Eventful):
 
         Serialize and store the state with a fresh state_id. Then add it to
         the shared READY states list
-
+        这将使状态排队以进行探索。
+        序列化并使用一个新的state_id存储状态。然后将其添加到共享READY状态列表中
                       +-------+
         State +----- >+ READY |
                       +-------+
@@ -651,25 +652,28 @@ class ManticoreBase(Eventful):
             self._lock.notify_all()
             # The problem with using will_did here is that the lock is released before the event is fired, so typically
             # a worker has moved the state from READY to BUSY *before* `did_enqueue_state` is published.
+            #在这里使用will_did的问题是，锁在事件触发之前被释放，所以通常在' did_enqueue_state '被发布之前，工作人员已经将状态从READY *移动到BUSY *。
             self._publish("did_enqueue_state", state_id, can_raise=False)
         return state_id
 
     def _get_state(self, wait=False) -> typing.Optional[StateBase]:
-        """ Dequeue a state form the READY list and add it to the BUSY list """
+        """ Dequeue a state form the READY list and add it to the BUSY list从READY列表中取出一个状态，并将其添加到BUSY列表中 """
         with self._lock:
             # If wait is true do the conditional wait for states
+            #如果wait为true，则对状态执行条件等待
             if wait:
                 # if not more states in the queue, let's wait for some forks
+                #如果没有更多的状态在队列中，让我们等待一些分叉
                 while not self._ready_states and not self._killed.value:
                     # if a shutdown has been requested then bail
                     if self.is_killed():
                         return None  # Cancelled operation
                     # If there are no more READY states and no more BUSY states
-                    # there is no chance we will get any new state so raise
+                    # there is no chance we will get any new state so raise如果没有更多的“就绪”状态和“忙碌”状态，我们就没有机会建立新的状态
                     if not self._busy_states:
                         return None  # There are not states
 
-                    # if there ares actually some workers ready, wait for state forks
+                    # if there ares actually some workers ready, wait for state forks#如果真的有一些工作人员准备好了，那就等着状态分叉吧
                     logger.debug("Waiting for available states")
                     self._lock.wait()
 
@@ -677,11 +681,11 @@ class ManticoreBase(Eventful):
                 return None
 
             # at this point we know there is at least one element
-            # and we have exclusive access
+            # and we have exclusive access此时，我们知道至少有一个元素，并且具有独占访问权
             assert self._ready_states
 
             # make the choice under exclusive access to the shared ready list
-            # state_id = self._policy.choice(list(self._ready_states)[0])
+            # state_id = self._policy.choice(list(self._ready_states)[0])在共享就绪列表的独占访问下做出选择state_id = self._policy.choice(list(self._ready_states)[0])
             state_id = random.choice(list(self._ready_states))
 
             # Move from READY to BUSY
@@ -719,7 +723,7 @@ class ManticoreBase(Eventful):
     @sync
     def _terminate_state(self, state_id: int, delete=False):
         """Send a BUSY state to the TERMINATED list or trash it if delete is True
-
+        向TERMINATED列表发送一个BUSY状态，如果delete为True则将其丢弃
         +------+        +------------+
         | BUSY +------->+ TERMINATED |
         +---+--+        +------------+
@@ -730,6 +734,7 @@ class ManticoreBase(Eventful):
 
         """
         # wait for a state id to be added to the ready list and remove it
+        #等待一个状态id被添加到ready列表并删除它
         if state_id not in self._busy_states:
             raise ManticoreError("Can not terminate. State is not being analyzed")
         self._busy_states.remove(state_id)
@@ -737,17 +742,17 @@ class ManticoreBase(Eventful):
         if delete:
             self._remove(state_id)
         else:
-            # add the state_id to the terminated list
+            # add the state_id to the terminated list#添加state_id到终止列表
             self._publish("will_transition_state", state_id, StateLists.busy, StateLists.terminated)
             self._terminated_states.append(state_id)
             self._publish("did_transition_state", state_id, StateLists.busy, StateLists.terminated)
 
-        # wake up everyone waiting for a change in the state lists
+        # wake up everyone waiting for a change in the state lists#唤醒所有等待状态列表改变的人
         self._lock.notify_all()
 
     @sync
     def _kill_state(self, state_id: int, delete=False):
-        """Send a BUSY state to the KILLED list or trash it if delete is True
+        """Send a BUSY state to the KILLED list or trash it if delete is True向kill列表发送一个BUSY状态，如果delete为True则将其丢弃
 
         +------+        +--------+
         | BUSY +------->+ KILLED |
@@ -759,6 +764,7 @@ class ManticoreBase(Eventful):
 
         """
         # wait for a state id to be added to the ready list and remove it
+        #等待一个状态id被添加到ready列表并删除它
         if state_id not in self._busy_states:
             raise ManticoreError("Can not even kill it. State is not being analyzed")
         self._busy_states.remove(state_id)
