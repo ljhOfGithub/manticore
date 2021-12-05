@@ -1204,7 +1204,7 @@ class ManticoreBase(Eventful):
                 self._daemon_threads[dt.id] = dt
                 dt.start(cb)
 
-        # Main process. Lets just wait and capture CTRL+C at main
+        # Main process. Lets just wait and capture CTRL+C at main#主要过程。让我们等待并捕获主界面的CTRL+C
         with WithKeyboardInterruptAs(self.kill):
             with self._lock:
                 while (self._busy_states or self._ready_states) and not self._killed.value:
@@ -1238,7 +1238,7 @@ class ManticoreBase(Eventful):
     @at_not_running
     def remove_all(self):
         """
-        Deletes all streams from storage and clean state lists
+        Deletes all streams from storage and clean state lists从存储中删除所有流并清除状态列表
         """
         for state_id in self._all_states:
             self._remove(state_id)
@@ -1251,7 +1251,7 @@ class ManticoreBase(Eventful):
     def finalize(self):
         """
         Generate a report testcase for every state in the system and remove
-        all temporary files/streams from the workspace
+        all temporary files/streams from the workspace为系统中的每个状态生成一个报告测试用例，并从工作区中移除所有临时文件/流
         """
         self.kill()
         for state in self.all_states:
@@ -1262,6 +1262,7 @@ class ManticoreBase(Eventful):
         """
         If a client has accessed the log server, and there are still buffered logs,
         waits up to 2 seconds for the client to retrieve the logs.
+        如果客户端访问了日志服务器，并且仍然有缓冲的日志，则需要等待2秒，以便客户端检索日志。
         """
         if self._daemon_threads[-1].activated:
             for _ in range(8):

@@ -33,7 +33,12 @@ logger = logging.getLogger(__name__)
 # WorkerThread: runs on a different thread
 # WorkerProcess: runs on a different process - Full multiprocessing
 # WorkerMultiprocessing: --planned-- runs on a different computer
-
+#工人
+#有4种类型的工人
+# WorkerSingle:运行在主进程上，不提供并发性
+# WorkerThread:运行在不同的线程上
+# WorkerProcess:运行在不同的进程上-完全多进程
+# WorkerMultiprocessing:——planned——在不同的计算机上运行
 
 class Worker:
     """
