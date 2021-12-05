@@ -509,11 +509,11 @@ class ManticoreBase(Eventful):
 
     def _fork(self, state, expression, policy="ALL", setstate=None):
         """
-        Fork state on expression concretizations.
-        Using policy build a list of solutions for expression.
-        For the state on each solution setting the new state with setstate
+        Fork state on expression concretizations.关于表达具体化的分叉状态。
+        Using policy build a list of solutions for expression.使用策略构建表达式的解决方案列表。
+        For the state on each solution setting the new state with setstate对于每个解决方案上的状态，使用setstate设置新状态
 
-        For example if expression is a Bool it may have 2 solutions. True or False.
+        For example if expression is a Bool it may have 2 solutions. True or False.例如，如果表达式是Bool，它可能有两个解决方案。真或假。
 
                                  Parent
                             (expression = ??)
@@ -548,7 +548,7 @@ class ManticoreBase(Eventful):
 
         self._publish("will_fork_state", state, expression, solutions, policy)
 
-        # Build and enqueue a state for each solution
+        # Build and enqueue a state for each solution#为每个解决方案构建并排队一个状态
         children = []
         for new_value in solutions:
             with state as new_state:
@@ -556,12 +556,14 @@ class ManticoreBase(Eventful):
 
                 # and set the PC of the new state to the concrete pc-dest
                 # (or other register or memory address to concrete)
+                #并将PC的新状态设置为具体的PC -dest
+                #(或其他寄存器或内存地址设置为具体的PC-dest)
                 setstate(new_state, new_value)
 
-                # enqueue new_state, assign new state id
+                # enqueue new_state, assign new state id排队new_state，分配新的state id
                 new_state_id = self._put_state(new_state)
 
-                # maintain a list of children for logging purpose
+                # maintain a list of children for logging purpose#为日志目的维护一个子列表
                 children.append(new_state_id)
 
         self._publish("did_fork_state", state, expression, solutions, policy, children)
