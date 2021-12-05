@@ -941,7 +941,7 @@ class ManticoreBase(Eventful):
         with testcase.open_stream("pkl", binary=True) as statef:
             PickleSerializer().serialize(state, statef)
 
-        # Let the plugins generate a state based report
+        # Let the plugins generate a state based report#让插件生成一个基于状态的报告
         for p in self.plugins.values():
             p.generate_testcase(state, testcase, message)
 
@@ -950,7 +950,7 @@ class ManticoreBase(Eventful):
 
     @at_not_running
     def register_plugin(self, plugin: Plugin):
-        # Global enumeration of valid events
+        # Global enumeration of valid events#全局有效事件枚举
         assert isinstance(plugin, Plugin)
         assert plugin.unique_name not in self.plugins, "Plugin instance already registered"
         assert getattr(plugin, "manticore", None) is None, "Plugin instance already owned"
@@ -1009,7 +1009,7 @@ class ManticoreBase(Eventful):
 
     @at_not_running
     def unregister_plugin(self, plugin: typing.Union[str, Plugin]):
-        """Removes a plugin from manticore.
+        """Removes a plugin from manticore.从manticore移除一个插件。之后不应该向它发送事件
         No events should be sent to it after
         """
         if isinstance(plugin, str):  # Passed plugin.unique_name instead of value
@@ -1038,6 +1038,7 @@ class ManticoreBase(Eventful):
         share context during the time manticore is not running.
         This local context is copied to the shared context when a run starts
         and copied back when a run finishes
+        方便地访问共享上下文。在manticore未运行期间，我们维护共享上下文的本地副本。该本地上下文在运行开始时复制到共享上下文，并在运行结束时复制回来
         """
         return self._shared_context
 
@@ -1048,14 +1049,14 @@ class ManticoreBase(Eventful):
         Manticore context. This should be used to access the global Manticore
         context when parallel analysis is activated. Code within the `with` block
         is executed atomically, so access of shared variables should occur within.
-
+        提供对全局Manticore上下文的安全并行访问的上下文管理器。当激活并行分析时，应该使用它来访问全局Manticore上下文。在' with '块中的代码是原子执行的，因此访问共享变量应该发生在。
         Example use::
 
             with m.locked_context() as context:
                 visited['visited'].append(state.cpu.PC)
 
         Optionally, parameters can specify a key and type for the object paired to this key.::
-
+        可选地，参数可以为与该键配对的对象指定一个键和类型。
             with m.locked_context('feature_list', list) as feature_list:
                 feature_list.append(1)
 
@@ -1066,7 +1067,8 @@ class ManticoreBase(Eventful):
         container proxy (which triggers a __setitem__ on the proxy object) does
         propagate through the manager and so to effectively modify such an item,
         one could re-assign the modified value to the container proxy:
-
+        注意:如果标准(非代理)list或dict对象包含在referent中，对这些可变值的修改将不会通过管理器传播，因为代理无法知道何时修改了其中包含的值。
+        然而，在容器代理中存储一个值(在代理对象上触发__setitem__)确实会通过管理器传播，因此为了有效地修改这样的项，可以将修改后的值重新赋给容器代理:
         :param object key: Storage key
         :param value_type: type of value associated with key
         :type value_type: list or dict or set
@@ -1074,6 +1076,7 @@ class ManticoreBase(Eventful):
         with self._lock:
             if key is None:
                 # If no key is provided we yield the raw shared context under a lock
+                #如果没有提供密钥，我们在一个锁下生成原始共享上下文
                 yield self._shared_context
             else:
                 # if a key is provided we yield the specific value or a fresh one
