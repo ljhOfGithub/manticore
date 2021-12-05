@@ -27,7 +27,7 @@ if install_helper.has_native:
 
 def main() -> None:
     """
-    Dispatches execution into one of Manticore's engines: evm or native.
+    Dispatches execution into one of Manticore's engines: evm or native.将执行分派到Manticore的一个引擎:evm或native。
     """
     args = parse_arguments()
 
@@ -73,7 +73,7 @@ def parse_arguments() -> argparse.Namespace:
         "--no-colors", action="store_true", help="Disable ANSI color escape sequences in output"
     )
     parser.add_argument("--offset", type=int, default=16, help=argparse.SUPPRESS)
-    # FIXME (theo) Add some documentation on the different search policy options
+    # FIXME (theo) Add some documentation on the different search policy options# FIXME (theo)为不同的搜索策略选项添加一些文档
     parser.add_argument(
         "--policy",
         type=str,
@@ -231,6 +231,7 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Configure Manticore for more exhaustive exploration. Evaluate gas, generate testcases for dead states, "
         "explore constant functions, and run a small suite of detectors.",
+        #配置Manticore以进行更详尽的探索。评估气体，生成死亡状态的测试例。”“探索常量函数，并运行一套小型探测器
     )
 
     config_flags = parser.add_argument_group("Constants")

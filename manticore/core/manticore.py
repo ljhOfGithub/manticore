@@ -47,12 +47,12 @@ consts.add("timeout", default=0, description="Timeout, in seconds, for Manticore
 consts.add(
     "cluster",
     default=False,
-    description="If True enables to run workers over the network UNIMPLEMENTED",
+    description="If True enables to run workers over the network UNIMPLEMENTED",#如果True,允许在未实现的网络上运行worker
 )
 consts.add(
     "procs",
     default=12,
-    description="Number of parallel processes to spawn in order to run every task, including solvers",
+    description="Number of parallel processes to spawn in order to run every task, including solvers",#为了运行每个任务(包括求解器)而生成的并行进程数
 )
 
 proc_type = MProcessingType.threading
@@ -64,7 +64,7 @@ consts.add(
     "mprocessing",
     default=proc_type,
     description="single: No multiprocessing at all. Single process.\n threading: use threads\n multiprocessing: use forked processes",
-)
+)#single:完全不进行多处理。单的过程。threading:使用线程multiprocessing:使用fork进程
 consts.add(
     "seed",
     default=random.getrandbits(32),
@@ -120,27 +120,28 @@ class ManticoreBase(Eventful):
             signal.signal(signal.SIGINT, signal.SIG_IGN)
 
         self._worker_type = WorkerProcess
-        # This is the global manager that will handle all shared memory access
+        # This is the global manager that will handle all shared memory access#这个全局管理器将处理所有共享内存访问
         # See. https://docs.python.org/3/library/multiprocessing.html#multiprocessing.managers.SyncManager
         self._manager = SyncManager()
         self._manager.start(raise_signal)
-        # The main manticore lock. Acquire this for accessing shared objects
-        # THINKME: we use the same lock to access states lists and shared contexts
+        # The main manticore lock. Acquire this for accessing shared objects#主蝎狮锁。获取这个以访问共享对象
+        # THINKME: we use the same lock to access states lists and shared contexts# THINKME:我们使用相同的锁来访问状态列表和共享上下文
         self._lock = self._manager.Condition()
         self._killed = self._manager.Value(bool, False)
         self._running = self._manager.Value(bool, False)
-        # List of state ids of States on storage
+        # List of state ids of States on storage存储的状态id列表
         self._ready_states = self._manager.list()
         self._terminated_states = self._manager.list()
         self._busy_states = self._manager.list()
         self._killed_states = self._manager.list()
         # The multiprocessing queue is much slower than the deque when it gets full, so we
         # triple the size in order to prevent that from happening.
+        #当多处理队列被填满时，它比deque队列要慢得多，所以我们将其大小增加了三倍，以防止这种情况发生。
         self._log_queue = self._manager.Queue(15000)
         self._shared_context = self._manager.dict()
         self._context_value_types = {list: self._manager.list, dict: self._manager.dict}
 
-    # Decorators added first for convenience.
+    # Decorators added first for convenience.为了方便，首先添加了装饰器。
     def sync(func: Callable) -> Callable:  # type: ignore
         """Synchronization decorator"""
 
@@ -153,7 +154,7 @@ class ManticoreBase(Eventful):
 
     def at_running(func: Callable) -> Callable:  # type: ignore
         """Allows the decorated method to run only when manticore is actively
-        exploring states
+        exploring states允许修饰的方法只在蝎尾正在积极探索状态时运行
         """
 
         @functools.wraps(func)
