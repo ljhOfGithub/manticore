@@ -1220,11 +1220,12 @@ class ArrayProxy(Array):
         if isinstance(index, Constant):
             self._concrete_cache[index.value] = value
         else:
-            # delete all cache as we do not know what this may overwrite.
+            # delete all cache as we do not know what this may overwrite.删除所有缓存，因为我们不知道这可能覆盖什么。
             self._concrete_cache = {}
 
         # potentially generate and update .written set
         # if index is symbolic it may overwrite other previous indexes
+        # 潜在生成和更新。如果索引是符号的，它可能会覆盖以前的其他索引
         self.written.add(index)
         self._array = self._array.store(index, value)
         return self
@@ -1289,6 +1290,7 @@ class ArrayProxy(Array):
             while not isinstance(array, ArrayVariable):
                 if isinstance(array, ArraySlice):
                     # if it is a proxy over a slice take out the slice too
+                    # 如果它是一个切片的代理，把切片也去掉
                     offset += array._slice_offset
                 else:
                     # The index written to underlaying Array are displaced when sliced
