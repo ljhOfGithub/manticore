@@ -100,6 +100,7 @@ class Worker:
         # If CTRL+C is received at any worker lets abort exploration via m.kill()
         # kill will set m._killed flag to true and then each worker will slowly
         # get out of its mainloop and quit.
+        #如果在任何工作单位接收到CTRL+C，通过m.kell终止探索。Kill()将设置m._killed标志设置为true，然后每个worker将慢慢退出主循环并退出。
         with WithKeyboardInterruptAs(m.kill):
 
             # The worker runs until the manticore is killed
@@ -107,6 +108,7 @@ class Worker:
 
                 # STARTED - Will try to consume states until a STOP event is received
                 # Outer loop, Keep getting states until someone request us to STOP
+                # STARTED -将尝试消耗状态，直到接收到一个STOP事件外部循环，一直获取状态，直到有人请求我们停止
                 try:  # handle fatal errors even exceptions in the exception handlers
                     try:  # handle Concretize and TerminateState
 
@@ -114,13 +116,14 @@ class Worker:
                         # The START has been requested, we operate with under the assumption
                         # that manticore we will let us stay at this phase for a _while_
                         # Requests to STOP will be honored ASAP (i.e. Not immediately)
-
+                        #在运行START已经被请求，我们在假设manticore的情况下操作，我们将让我们停留在这个阶段_whil_requests to STOP将被尽快执行(即不是立即执行)
                         # Select a single state
                         # wait for other worker to add states to the READY list
                         # This momentarily get the main lock and then releases
                         # it while waiting for changes
                         # Raises an Exception if manticore gets cancelled
                         # while waiting or if there are no more potential states
+                        # 这暂时获得主锁，然后在等待更改时释放它。如果在等待时manticore被取消或没有更多的潜在状态
                         logger.debug("[%r] Waiting for states", self.id)
                         # If at STANDBY wait for any change
                         current_state = m._get_state(wait=True)
@@ -128,6 +131,7 @@ class Worker:
                         # there are no more states to process
                         # states can come from the ready list or by forking
                         # states currently being analyzed in the busy list
+                        # 没有更多的状态来处理，状态可以来自就绪列表或fork当前在繁忙列表中分析的状态
                         if current_state is None:
                             logger.debug("[%r] No more states", self.id)
                             break
@@ -135,6 +139,7 @@ class Worker:
                         # assert current_state is not None
                         # Allows to terminate manticore worker on user request
                         # even in the middle of an execution
+                        # 允许在用户请求时终止manticore worker，甚至在执行过程中
                         logger.debug("[%r] Running", self.id)
                         assert (
                             current_state.id in m._busy_states
@@ -142,7 +147,7 @@ class Worker:
                         )
 
                         # This does not hold the lock so we may loss some event
-                        # flickering
+                        # flickering这并没有保持锁，所以我们可能会丢失一些事件闪烁
                         while not m._killed.value:
                             current_state.execute()
                         else:
@@ -165,6 +170,7 @@ class Worker:
                         # Though, normally fork() saves the spawned childs,
                         # returns a None and let _get_state choose what to explore
                         # next
+                        #fork()方法可以决定继续探索哪个状态。例如，当fork产生单一状态时，最好继续运行。但是，fork()通常保存生成的子节点，返回一个None并让_get_state选择下一步要探索的内容
                         m._fork(current_state, exc.expression, exc.policy, exc.setstate)
                         current_state = None
 
@@ -173,13 +179,14 @@ class Worker:
                         # Notify this state is done
                         m._publish("will_terminate_state", current_state, exc)
                         # Update the stored version of the current state
-
+                        #更新当前状态的存储版本
                         current_state._terminated_by = exc
 
                         m._save(current_state, state_id=current_state.id)
                         # Add the state to the terminated state list re-using
                         # the same id. No other worker will use this state in
                         # this run
+                        # 使用相同的id将状态添加到终止状态列表中。没有其他工作人员将在此运行中使用此状态
                         m._terminate_state(current_state.id)
 
                         m._publish("did_terminate_state", current_state, exc)
@@ -219,7 +226,9 @@ class WorkerSingle(Worker):
     """A single worker that will run in the current process and current thread.
     As this will not provide any concurrency is normally only used for
     profiling underlying arch emulation and debugging."""
-
+    """将在当前进程和当前线程中运行的单个worker。
+    由于这将不提供任何并发性，通常只用于分析底层拱模拟和调试。
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, single=True, **kwargs)
 
