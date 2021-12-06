@@ -280,7 +280,7 @@ class DaemonThread(WorkerThread):
         """
         Function that starts the thread. Can take an optional callable to be invoked at the start, or can be subclassed,
         in which case `target` should be None and the the `run` method will be invoked at the start.
-
+        启动线程的函数。可以接受一个可选的可调用对象，以便在开始时调用，或者可以子类化，在这种情况下，' target '应该是None，并且' run '方法将在开始时被调用。
         :param target: an optional callable that will be invoked to start the thread. The callable should accept this
         thread as an argument.
         """
@@ -329,13 +329,14 @@ class LogCaptureWorker(DaemonThread):
             # is slightly faster than using `isinstance` for the default case (threading) but does slow down
             # log throughput by about 20% (on top of the 25x slowdown) when using Multiprocessing instead of
             # threading
+            #将maxlen=n添加到deque中比检查队列是否为队列快大约25倍。队列已满，如果是，弹出，并追加。出于这个原因，我们在线程和单线程中使用了deque，而不是一个管理器。在多处理队列(因为这是它所支持的全部)。捕获AttributeError比在默认情况下(线程)使用' isinstance '稍微快一些，但当使用Multiprocessing而不是线程时，会降低大约20%的日志吞吐量(在25倍的放缓之上)
             if q.full():
                 q.get()
             q.put(msg)
 
     def dump_logs(self):
         """
-        Converts captured logs into protobuf format
+        Converts captured logs into protobuf format将捕获的日志转换为protobuf格式
         """
         self.activated = True
         serialized = MessageList()
@@ -364,6 +365,7 @@ class LogCaptureWorker(DaemonThread):
         except OSError as e:
             # TODO - this should be logger.warning, but we need to rewrite several unit tests that depend on
             # specific stdout output in order to do that.
+            # 特定的stdout输出，以便完成此操作。
             logger.info("Could not start log capture server: %s", str(e))
 
 
@@ -403,7 +405,7 @@ def state_monitor(self: DaemonThread):
     """
     Daemon thread callback that runs a server that listens for incoming TCP connections and
     dumps the list of state descriptors.
-
+    守护进程线程回调，它运行一个侦听传入TCP连接并转储状态描述符列表的服务器。
     :param self: DeamonThread created to run the server
     """
     logger.debug(

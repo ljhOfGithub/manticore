@@ -48,7 +48,7 @@ class Concretize(StateException):
     This will fork the state using a pre-set concretization policy
     Optional `setstate` function set the state to the actual concretized value.
     #Fixme Doc.
-
+    这将使用预先设置的具体化策略来fork状态。可选的' setstate '函数将状态设置为实际的具体化值。Fixme Doc。
     """
 
     _ValidPolicies = ["MIN", "MAX", "MINMAX", "ALL", "SAMPLED", "ONE", "PESSIMISTIC", "OPTIMISTIC"]
@@ -70,6 +70,7 @@ class Concretize(StateException):
 class SerializeState(Concretize):
     """Allows the user to save a copy of the current state somewhere on the
     disk so that analysis can later be resumed from this point.
+    允许用户在磁盘上的某个地方保存当前状态的副本，以便以后可以从这一点恢复分析。
     """
 
     def _setstate(self, state, _value):
@@ -94,6 +95,7 @@ class ForkState(Concretize):
     Note: as setstate is None the concrete value is not written back
     to the state. So the expression could still by symbolic(but constrained)
     in forked states.
+    Bool表达式的专门具体化类。它以“真”和“假”作为具体的解决方案。备注:当setstate为None时，具体的值不会回写到该状态。因此，在分叉的国家中，该表达式仍然可以象征性地(但受到限制)。
     """
 
     def __init__(self, message, expression: Bool, **kwargs):
@@ -459,7 +461,7 @@ class StateBase(Eventful):
     def solve_one_n(self, *exprs: Expression, constrain: bool = False) -> List[int]:
         """
         Concretize a list of symbolic :class:`~manticore.core.smtlib.expression.Expression` into
-        a list of solutions.
+        a list of solutions.具体化一个symbolic:class:`~manticore.core.smtlib.expression.Expression'转换为一个解决方案列表。
 
         :param exprs: An iterable of manticore.core.smtlib.Expression
         :param bool constrain: If True, constrain expr to solved solution value

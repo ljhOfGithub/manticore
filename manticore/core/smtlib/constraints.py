@@ -100,6 +100,7 @@ class ConstraintSet:
         # a derived constraintset may be using this. So we can't add any more
         # constraints to this one. After the child constraintSet is deleted
         # we regain the ability to add constraints.
+        #如果self._child这个约束集已经被分叉，派生的约束集可能正在使用它。所以我们不能再给这个加约束条件了。删除子constraintSet之后，我们重新获得了添加约束的能力。
         if self._child is not None:
             raise ConstraintException("ConstraintSet is frozen")
 
@@ -132,7 +133,7 @@ class ConstraintSet:
         """
         Slices this ConstraintSet keeping only the related constraints.
         Two constraints are independient if they can be expressed full using a
-        disjoint set of variables.
+        disjoint set of variables.只保留相关约束的ConstraintSet切片。如果两个约束可以用一组不相交的变量完全表示，那么它们就是独立的。
         Todo: Research. constraints refering differen not overlapping parts of the same array
         should be considered independient.
         :param related_to: An expression
@@ -306,7 +307,8 @@ class ConstraintSet:
         the replacement is taken from the provided migration map.
 
         The migration mapping is updated with new replacements.
-
+        将为不同约束集创建的表达式迁移到self。表达式中使用的所有外部变量都将被该约束集的变量替换。
+        如果变量是在从提供的迁移映射中获取替换之前被替换的。迁移映射使用新的替换进行更新。
         :param expression: the potentially foreign expression
         :param name_migration_map: mapping of already migrated variables. maps from string name of foreign variable to its currently existing migrated string name. this is updated during this migration.
         :return: a migrated expression where all the variables are local. name_migration_map is updated
@@ -367,7 +369,7 @@ class ConstraintSet:
         return migrated_expression
 
     def new_bool(self, name=None, taint=frozenset(), avoid_collisions=False):
-        """Declares a free symbolic boolean in the constraint store
+        """Declares a free symbolic boolean in the constraint store在约束存储区中声明一个自由的符号布尔值
         :param name: try to assign name to internal variable representation,
                      if not unique, a numeric nonce will be appended
         :param avoid_collisions: potentially avoid_collisions the variable to avoid name collisions if True
@@ -383,7 +385,7 @@ class ConstraintSet:
         return self._declare(BoolVariable(name=name, taint=taint))
 
     def new_bitvec(self, size, name=None, taint=frozenset(), avoid_collisions=False):
-        """Declares a free symbolic bitvector in the constraint store
+        """Declares a free symbolic bitvector in the constraint store在约束存储区中声明一个自由的符号位向量
         :param size: size in bits for the bitvector
         :param name: try to assign name to internal variable representation,
                      if not unique, a numeric nonce will be appended

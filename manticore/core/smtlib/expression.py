@@ -60,7 +60,7 @@ class XSlotted(type):
 
     def __new__(cls, clsname, bases, attrs, abstract=False):
         xslots = frozenset(attrs.get("__xslots__", ()))
-        # merge the xslots of all the bases with the one defined here
+        # merge the xslots of all the bases with the one defined here将所有基的xslot与这里定义的xslot合并
         for base in bases:
             xslots = xslots.union(getattr(base, "__xslots__", ()))
         attrs["__xslots__"] = tuple(xslots)
@@ -99,7 +99,7 @@ def issymbolic(value) -> bool:
     """
     Helper to determine whether an object is symbolic (e.g checking
     if data read from memory is symbolic)
-
+    帮助确定一个对象是否为符号(例如检查从内存中读取的数据是否为符号)
     :param object value: object to check
     :return: whether `value` is symbolic
     :rtype: bool
@@ -109,7 +109,7 @@ def issymbolic(value) -> bool:
 
 def istainted(arg, taint=None):
     """
-    Helper to determine whether an object if tainted.
+    Helper to determine whether an object if tainted.帮助确定一个对象是否受污染。
     :param arg: a value or Expression
     :param taint: a regular expression matching a taint value (eg. 'IMPORTANT.*'). If None, this function checks for any taint value.
     """
@@ -127,7 +127,7 @@ def istainted(arg, taint=None):
 
 def get_taints(arg, taint=None):
     """
-    Helper to list an object taints.
+    Helper to list an object taints.帮助程序列出一个对象污染。
     :param arg: a value or Expression
     :param taint: a regular expression matching a taint value (eg. 'IMPORTANT.*'). If None, this function checks for any taint value.
     """
@@ -375,7 +375,7 @@ class BitVec(Expression, abstract=True):
     # otherwise __div__() is used. If only one of these two methods is
     # defined, the object will not support division in the alternate context;
     # TypeError will be raised instead.
-
+    # 除法运算符(/)由这些方法实现。__truediv__()方法用于__future__。除法有效，否则将使用__div__()。如果只定义了这两个方法中的一个，该对象将不支持在替代上下文中划分;TypeError将被引发。
     def __div__(self, other):
         return BitVecDiv(a=self, b=self.cast(other))
 
@@ -436,6 +436,7 @@ class BitVec(Expression, abstract=True):
     # for comparison operators in preference to __cmp__() below. The
     # correspondence between operator symbols and method names is as
     # follows:
+    # 这就是所谓的“富比较”方法，与下面的__cmp__()相比，比较操作符会被调用。操作符符号与方法名之间的对应关系如下:
     #   x<y calls x.__lt__(y),
     #   x<=y calls x.__le__(y),
     #   x==y calls x.__eq__(y),
@@ -580,6 +581,7 @@ class BitVecOperation(BitVec, abstract=True):
         self._operands = operands
 
         # If taint was not forced by a keyword argument, calculate default
+        # 如果taint不是由关键字参数强制的，计算默认值
         kwargs.setdefault("taint", reduce(lambda x, y: x.union(y.taint), operands, frozenset()))
 
         super().__init__(size=size, **kwargs)
@@ -733,7 +735,7 @@ class UnsignedGreaterOrEqual(BoolOperation):
 # Array  BV32 -> BV8  or BV64 -> BV8
 class Array(Expression, abstract=True):
     """An Array expression is an unmutable mapping from bitvector to bitvector
-
+    数组表达式是一个从bitvector到bitvector的不可变映射
     array.index_bits is the number of bits used for addressing a value
     array.value_bits is the number of bits used in the values
     array.index_max counts the valid indexes starting at 0. Accessing outside the bound is undefined
