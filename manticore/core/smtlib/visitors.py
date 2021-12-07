@@ -18,6 +18,7 @@ class Visitor:
     Inherit your class visitor from this one and get called on a different
     visiting function for each type of expression. It will call the first
     implemented method for the __mro__ class order.
+    从这个函数继承类访问器，并对每种类型的表达式调用不同的访问函数。它将调用__mro__类的第一个实现方法。
      For example for a BitVecAdd it will try
          visit_BitVecAdd()          if not defined then it will try with
          visit_BitVecOperation()    if not defined then it will try with
@@ -68,11 +69,15 @@ class Visitor:
         The exploration algorithm is a DFS post-order traversal
         The implementation used two stacks instead of a recursion
         The final result is store in self.result
-
+        来访者的入口。探索算法是DFS的后序遍历，实现使用了两个栈，而不是递归，最终结果存储在self.result
         :param node: Node to explore
         :type node: Expression
         :param use_fixed_point: if True, it runs _methods until a fixed point is found
         :type use_fixed_point: Bool
+        :param node:要搜索的节点
+        节点类型:表达式
+        :param use_fixed_point:如果为True，它运行_methods直到找到一个固定的点
+        :类型use_fixed_point: Bool
         """
         if isinstance(node, ArrayProxy):
             node = node.array
@@ -121,9 +126,10 @@ class Visitor:
 
 class Translator(Visitor):
     """Simple visitor to translate an expression into something else"""
-
+    """将一个表达转换成其他东西的访问者"""
     def _method(self, expression, *args):
         # Special case. Need to get the unsleeved version of the array
+        # 特例。需要获取数组的无袖版本
         if isinstance(expression, ArrayProxy):
             expression = expression.array
 
@@ -141,6 +147,7 @@ class Translator(Visitor):
 class GetDeclarations(Visitor):
     """Simple visitor to collect all variables in an expression or set of
     expressions
+    收集表达式或表达式集中的所有变量的简单访问者
     """
 
     def __init__(self, **kwargs):
@@ -162,6 +169,7 @@ class GetDeclarations(Visitor):
 class GetDepth(Translator):
     """Simple visitor to collect all variables in an expression or set of
     expressions
+    收集表达式或表达式集中的所有变量的简单访问者
     """
 
     def __init__(self, *args, **kwargs):
@@ -201,7 +209,8 @@ class PrettyPrinter(Visitor):
         Overload Visitor.visit because:
         - We need a pre-order traversal
         - We use a recursion as it makes it easier to keep track of the indentation
-
+        -我们需要一个预购遍历
+        -我们使用递归，因为它使跟踪缩进更容易
         """
         self._method(expression)
 
@@ -614,7 +623,7 @@ class ArithmeticSimplifier(Visitor):
         end = None
         begining = None
         for o in operands:
-            # If found a non BitVecExtract, do not apply
+            # If found a non BitVecExtract, do not apply #如果发现一个非BitVecExtract，不应用
             if not isinstance(o, BitVecExtract):
                 value = None
                 break
