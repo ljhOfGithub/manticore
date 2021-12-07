@@ -78,7 +78,10 @@ class Store:
 
      * Implement either save_value/load_value, or save_stream/load_stream, or both.
      * Define a `store_type` class variable of type str.
-       * This is used as a prefix for a store descriptor
+     * This is used as a prefix for a store descriptor
+    实现save_value/load_value，或save_stream/load_stream，或两者都实现。
+    定义一个str类型的' store_type '类变量。
+    *这被用作存储描述符的前缀
     """
 
     @classmethod
@@ -147,9 +150,9 @@ class Store:
         :param key:
         :return: A managed stream-like object
         """
-        s = io.BytesIO() if binary else io.StringIO()
-        yield s
-        self.save_value(key, s.getvalue())  # type: ignore
+        s = io.BytesIO() if binary else io.StringIO()#BytesIO实现了在内存中读写bytes
+        yield s#返回一个可以用s.writes进行写入的对象
+        self.save_value(key, s.getvalue())  # type: ignore，通过传回的s对象携带需要写入的信息然后保存
 
     @contextmanager
     def load_stream(self, key: str, binary: bool = False):
@@ -334,7 +337,7 @@ class MemoryStore(Store):
 
     # TODO(yan): Once we get a global config store, check it to make sure
     # we're executing in a single-worker or test environment.
-
+    # 我们在单工作器或测试环境中执行。
     def __init__(self, uri: Optional[str] = None):
         self._lock = threading.RLock()
         self._data: Dict = {}
@@ -359,7 +362,7 @@ class MemoryStore(Store):
 
     @contextmanager
     def stream(self, key, mode="r", lock=False):
-        if lock:
+        if lock:#如果上了锁，则报错，不支持并发
             raise ManticoreError("mem: does not support concurrency")
         if "b" in mode:
             s = io.BytesIO(self._data.get(key, b""))
@@ -409,7 +412,7 @@ class RedisStore(Store):
     def load_value(self, key):
         """
         Load an arbitrary value identified by `key`.
-
+        加载一个由' key '标识的任意值。
         :param str key: The key that identifies the value
         :return: The loaded value
         """
@@ -425,7 +428,7 @@ class RedisStore(Store):
 class Workspace:
     """
     A workspace maintains a list of states to run and assigns them IDs.
-    工作区维护要运行的状态列表，并为它们分配id。
+    workspace维护要运行的状态列表，并为它们分配id。
     """
 
     def __init__(self, store_or_desc: Union[None, Store, str] = None):
@@ -515,9 +518,10 @@ class ManticoreOutput:
     """
     Functionality related to producing output. Responsible for generating state summaries,
     coverage information, etc.
-    与产出相关的功能。负责生成状态摘要、覆盖率信息等。
+    与输出相关的功能。负责生成状态摘要、覆盖率信息等。
     Invoked only from :class:`manticore.Manticore` from a single parent process, so
     locking is not required.
+    只从:类:' manticore调用。从单个父进程，所以不需要锁。
     """
 
     def __init__(self, desc=None):
