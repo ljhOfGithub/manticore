@@ -1,5 +1,7 @@
 # Minimal ethereum type signature parser.
 # This parses the signature and types used to calculate the function hash
+#最小以太坊类型签名解析器。
+#解析用于计算函数哈希值的签名和类型
 import warnings
 from ..exceptions import EthereumError
 import ply.yacc as yacc

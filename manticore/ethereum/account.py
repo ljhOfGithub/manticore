@@ -36,6 +36,7 @@ class EVMAccount:
         """
         This is named this way to avoid naming collisions with Solidity functions/data,
         since EVMContract inherits this.
+        这样命名是为了避免与solid函数/数据的命名冲突，因为EVMContract继承了这一点。
         """
         return self._name
 
