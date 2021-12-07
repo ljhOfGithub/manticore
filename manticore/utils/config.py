@@ -2,7 +2,7 @@
 This file implements a configuration system.
 
 The config values and constant are gathered from three sources:
-
+    配置值和常量从三个来源收集:
     1. default values provided at time of definition
     2. yml files (i.e. ./manticore.yml)
     3. command line arguments
@@ -29,7 +29,7 @@ class ConfigError(Exception):
 
 class ConfigEnum(Enum):
     """Used as configuration constant for choosing flavors"""
-
+    """用作选择口味的配置常量"""
     def title(self):
         return self._name_.title()
 
@@ -66,6 +66,7 @@ class _Var:
 class _Group:
     """
     Configuration group to which you can add variables by simple doing:
+        配置组，您可以通过简单的操作向其中添加变量
         group.add('some_var', default=123, description='..')
 
     And then use their value in the code as:
@@ -80,6 +81,7 @@ class _Group:
 
     Note that it is not recommended to use it as a default argument value for a function as it will be evaluated once.
     Also don't forget that a given variable can be set through CLI or .yaml file!
+    注意，不建议使用它作为函数的默认参数值，因为它将被计算一次。另外，不要忘记可以通过CLI或.yaml文件设置给定的变量!
     (see config.py)
     """
 
@@ -208,6 +210,7 @@ class _TemporaryGroup:
 def get_group(name: str) -> _Group:
     """
     Get a configuration variable group named |name|
+    获取一个名为|name|的配置变量组
     """
     global _groups
 

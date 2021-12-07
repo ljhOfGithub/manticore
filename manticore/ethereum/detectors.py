@@ -75,6 +75,7 @@ class Detector(Plugin):
     def add_finding_here(self, state, finding, constraint=True):
         """
         Logs a finding in current contract and assembler line.
+        在指定的合同和汇编器行记录发现的情况。
         :param state: current state
         :param finding: textual description of the finding
         :param constraint: finding is considered reproducible only when constraint is True
@@ -104,7 +105,8 @@ class Detector(Plugin):
 
     def _get_location(self, state, hash_id):
         """
-        Get previously saved location获取先前保存的位置
+        Get previously saved location
+        获取先前保存的位置
         A location is composed of: address, pc, finding, at_init, condition
         location对象包括：address, pc, finding, at_init, condition
         """
@@ -118,7 +120,6 @@ class DetectEnvInstruction(Detector):
     """
     Detect the usage of instructions that query environmental/block information:
     BLOCKHASH, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, ORIGIN, GASPRICE
-
     检测查询环境/块信息的指令的使用情况:Blockhash, coinbase，时间戳，数量，难度，汽油限制，来源，汽油价格
     Sometimes environmental information can be manipulated. Contracts should avoid
     using it. Unless special situations. Notably to programatically detect human transactions
@@ -421,8 +422,8 @@ class DetectIntegerOverflow(Detector):
         +3fffffff     True    False    False    False    False    False    False
         +7fffffff     True     True     True    False    False    False    False
         """
-        sub = Operators.SEXTEND(a, 256, 512) - Operators.SEXTEND(b, 256, 512)
-        cond = Operators.OR(sub < -(1 << 255), sub >= (1 << 255))
+        sub = Operators.SEXTEND(a, 256, 512) - Operators.SEXTEND(b, 256, 512)#
+        cond = Operators.OR(sub < -(1 << 255), sub >= (1 << 255))#检查是否上溢
         return cond
 
     @staticmethod
@@ -449,7 +450,7 @@ class DetectIntegerOverflow(Detector):
         """
         Sign extend the value to 512 bits and check the result can be represented
          in 256. Following there is a 32 bit excerpt of this condition:
-
+        符号将值扩展到512位，检查结果可以用256表示
         a  -  b   ffffffff bfffffff 80000001 00000000 00000001 3ffffffff 7fffffff
         ffffffff     True     True     True    False     True     True     True
         bfffffff     True     True     True    False    False     True     True
@@ -538,7 +539,7 @@ class DetectIntegerOverflow(Detector):
         mnemonic = instruction.semantics
         ios = False
         iou = False
-
+        
         if mnemonic == "ADD":
             ios = self._signed_add_overflow(state, *arguments)
             iou = self._unsigned_add_overflow(state, *arguments)
@@ -550,6 +551,7 @@ class DetectIntegerOverflow(Detector):
             iou = self._unsigned_sub_overflow(state, *arguments)
         elif mnemonic == "SSTORE":
             # If an overflowded value is stored in the storage then it is a finding
+            # 如果一个溢出的值存储在存储中，那么它是一个发现
             # Todo: save this in a stack and only do the check if this does not
             #  revert/rollback
             where, what = arguments

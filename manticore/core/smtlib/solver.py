@@ -139,7 +139,7 @@ class Solver(SingletonMixin):
 
     def optimize(self, constraints, X, operation, M=10000):
         """
-        Iteratively finds the maximum or minimal value for the operation
+        Iteratively finds the maximum or minimal value for the operation 迭代查找操作的最大值或最小值(通常为操作符)
         (Normally Operators.UGT or Operators.ULT)
 
         :param constraints: the constraints set
@@ -154,10 +154,12 @@ class Solver(SingletonMixin):
 
     def can_be_true(self, constraints, expression=True) -> bool:
         """Check if given expression could be valid"""
+        """检查给定表达式是否有效"""
         raise SolverException("Abstract method not implemented")
 
     def must_be_true(self, constraints, expression) -> bool:
         """Check if expression is True and that it can not be False with current constraints"""
+        """检查表达式是否为True，并且在当前约束条件下它不能为False """
         solutions = self.get_all_values(constraints, expression, maxcnt=2, silent=True)
         return solutions == [True]
 
@@ -167,6 +169,7 @@ class Solver(SingletonMixin):
 
     def get_value(self, constraints, expression):
         """Ask the solver for one possible result of given expression using given set of constraints."""
+        """要求求解器使用给定的约束集，得到给定表达式的一个可能结果。"""
         raise SolverException("Abstract method not implemented")
 
     def max(self, constraints, X: BitVec, M=10000):
@@ -191,6 +194,7 @@ class Solver(SingletonMixin):
 
     def minmax(self, constraints, x, iters=10000):
         """Returns the min and max possible values for x within given constraints"""
+        """返回给定约束条件下x的最小和最大可能值"""
         if issymbolic(x):
             m = self.min(constraints, x, iters)
             M = self.max(constraints, x, iters)
@@ -249,6 +253,7 @@ class SmtlibProc:
             self._proc.wait()
 
             # No need to wait for termination, zombies avoided.
+            #不需要等待终止，僵尸避免。
         self._proc = None
 
     def send(self, cmd: str) -> None:

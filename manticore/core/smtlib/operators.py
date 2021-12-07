@@ -134,7 +134,7 @@ def EXTRACT(x, offset, size):
         return (x >> offset) & ((1 << size) - 1)
 
 
-def SEXTEND(x, size_src, size_dest):
+def SEXTEND(x, size_src, size_dest):#将x从size_src扩展到size_dest
     if isinstance(x, int):
         if x >= (1 << (size_src - 1)):
             x -= 1 << size_src
