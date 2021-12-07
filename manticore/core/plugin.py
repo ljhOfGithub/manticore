@@ -73,6 +73,7 @@ class Plugin(metaclass=DecorateAllMeta):
         This should be used to access the global Manticore context
         when parallel analysis is activated. Code within the `with` block is executed
         atomically, so access of shared variables should occur within.
+        提供对全局Manticore上下文的安全并行访问的上下文管理器。当激活并行分析时，应该使用它来访问全局Manticore上下文。在' with '块中的代码是原子执行的，因此访问共享变量应该发生在。
         """
         plugin_context_name = self._plugin_context_name
         with self.manticore.locked_context(plugin_context_name, dict) as context:
@@ -85,7 +86,7 @@ class Plugin(metaclass=DecorateAllMeta):
 
     @property
     def context(self):
-        """ Convenient access to shared context """
+        """ Convenient access to shared context 方便地访问共享上下文"""
         plugin_context_name = self._plugin_context_name
         if plugin_context_name not in self.manticore.context:
             self.manticore.context[plugin_context_name] = {}
@@ -109,7 +110,7 @@ def _dict_diff(d1, d2):
     """
     Produce a dict that includes all the keys in d2 that represent different values in d1, as well as values that
     aren't in d1.
-
+    生成一个字典，其中包含d2中表示d1中不同值的所有键，以及不在d1中的值。
     :param dict d1: First dict
     :param dict d2: Dict to compare with
     :rtype: dict
@@ -132,6 +133,7 @@ class ExtendedTracer(Plugin):
     def __init__(self):
         """
         Record a detailed execution trace
+        记录详细的执行跟踪
         """
         super().__init__()
         self.last_dict = {}
@@ -418,47 +420,64 @@ class ExamplePlugin(Plugin):
 class StateDescriptor:
     """
     Dataclass that tracks information about a State.
+    跟踪状态信息的数据类。
     """
 
     #: State ID Number
     state_id: int
     #: Which State List the state currently resides in (or None if it's been removed entirely)
+    # 当前状态列表(或None，如果它已经被完全删除)
     state_list: typing.Optional[StateLists] = None
     #: State IDs of any states that forked from this one
+    #:任何从这个分叉的状态id
     children: set = field(default_factory=set)
     #: State ID of zero or one forked state that created this one
+    #: 0或创建这个的一个分叉状态的状态ID
     parent: typing.Optional[int] = None
     #: The time that any field of this Descriptor was last updated
+    #:该描述符的任何字段最后更新的时间
     last_update: datetime = field(default_factory=datetime.now)
     #: The time at which the on_execution_intermittent callback was last applied to this state. This is when the PC and exec count get updated.
+    #: on_execution_间歇式回调最后一次应用到这个状态的时间。这是当PC和执行计数得到更新。
     last_intermittent_update: typing.Optional[datetime] = None
     #: The time at which this state was created (or first detected, if the did_enque callback didn't fire for some reason)
+    #:这个状态创建的时间(或者第一次检测到，如果did_enque回调由于某些原因没有触发)
     created_at: datetime = field(default_factory=datetime.now)
     #: What the state is currently doing (ie waiting for a worker, running, solving, etc.) See enums.StateStatus
+    # :当前状态正在做什么(例如等待工人，运行，解决等)参见enum.StateStatus
     status: StateStatus = StateStatus.waiting_for_worker
     #: The last thing a state was doing. Allows us to swap back to this once it finishes solving.
+    #:一个国家做的最后一件事。允许我们在它解完后切换回这个。
     _old_status: typing.Optional[StateStatus] = None
     #: Total number of instruction executions in this state, including those in its parents
+    #:该状态下执行的指令总数，包括其父节点的指令
     total_execs: typing.Optional[int] = None
     #: Number of executions that took place in this state alone, excluding its parents
+    #:仅在该状态发生的执行数量，不包括其父母
     own_execs: typing.Optional[int] = None
     #: Last program counter (if set)
+    #:最后一个程序计数器(如果设置)
     pc: typing.Optional[typing.Any] = None
     #: Last concrete program counter, useful when a state forks and the program counter becomes symbolic
+    #:最后一个具体的程序计数器，当一个状态分叉，程序计数器成为符号时很有用
     last_pc: typing.Optional[typing.Any] = None
     #: Dict mapping field names to the time that field was last updated
+    #:字典映射字段名到该字段最近更新的时间
     field_updated_at: typing.Dict[str, datetime] = field(default_factory=dict)
     #: Message attached to the TerminateState exception that ended this state
+    #:附加到终止此状态的TerminateState异常的消息
     termination_msg: typing.Optional[str] = None
 
     def __setattr__(self, key, value):
         """
         Force updates the last_updated item any time a field is written to
+        当一个字段被写入时，强制更新last_updated项
         """
         if key != "last_update":
             super().__setattr__(key, value)
         now = datetime.now()
         # This calls setattr on the _dict_, so it doesn't cause an infinite loop
+        #调用_dict_上的setattr，所以它不会导致一个无限循环
         getattr(self, "field_updated_at", {})[key] = now
         super().__setattr__("last_update", now)
 
@@ -467,6 +486,7 @@ class IntrospectionAPIPlugin(Plugin):
     """
     Plugin that tracks the movements of States throughout the State lifecycle. Creates a StateDescriptor for each state
     and stores them in its context, and keeps them up to date whenever a callback registers a change in the State.
+    在整个状态生命周期中跟踪状态的移动的插件。为每个状态创建一个StateDescriptor，并将它们存储在它的上下文中，并且当回调在state中注册一个更改时，保持它们是最新的。
     """
 
     NAME = "introspector"
@@ -488,7 +508,7 @@ class IntrospectionAPIPlugin(Plugin):
     def will_run_callback(self, ready_states: typing.Generator):
         """
         Called at the beginning of ManticoreBase.run(). Creates a state descriptor for each of the ready states.
-
+        在ManticoreBase.run()的开头调用。为每个就绪状态创建一个状态描述符。
         :param ready_states: Generator that allows us to iterate over the ready states (and modify them if necessary)
         """
         for state in ready_states:
@@ -497,7 +517,7 @@ class IntrospectionAPIPlugin(Plugin):
     def did_enqueue_state_callback(self, state_id: int):
         """
         Called whenever a state is added to the ready_states list. Creates a state descriptor.
-
+        当一个状态被添加到ready_states列表时调用。创建一个状态描述符。
         :param state_id: State ID of the new State
         """
         logger.debug("did_enqueue_state: %s", state_id)
@@ -509,7 +529,7 @@ class IntrospectionAPIPlugin(Plugin):
         """
         Called whenever a state moves from one state list to another. Updates the status based on which list the state
         has been moved to.
-
+        当一个状态从一个状态列表移动到另一个状态列表时调用。根据状态移动到的列表更新状态。
         :param state_id: The ID of the state that was moved
         :param from_list: The list the state used to be in
         :param to_list: The list it's currently in
@@ -518,7 +538,7 @@ class IntrospectionAPIPlugin(Plugin):
         with self.locked_context("manticore_state", dict) as context:
             if state_id not in context:
                 logger.warning(
-                    "Got a state transition event for %s, but failed to capture its initialization",
+                    "Got a state transition event for %s, but failed to capture its initialization",#获得%s的状态转换事件，但未能捕获其初始化
                     state_id,
                 )
             state = context.setdefault(
@@ -526,7 +546,7 @@ class IntrospectionAPIPlugin(Plugin):
             )
             if state.state_list != from_list:
                 logger.warning(
-                    "Callbacks failed to capture state %s transitioning from %s to %s",
+                    "Callbacks failed to capture state %s transitioning from %s to %s",#回调捕获状态%s从%s转换到%s失败
                     state_id,
                     state.state_list,
                     from_list,
@@ -544,7 +564,8 @@ class IntrospectionAPIPlugin(Plugin):
         Called whenever a state was removed. As in, not terminated, not killed, but removed. This happens when we fork -
         the parent state is removed and the children are enqueued. It can also be triggered manually if we really don't
         like a state for some reason. Doesn't destroy the state descriptor, but updates its status and list accordingly.
-
+        每当一个状态被移除时调用。也就是说，不是终结，不是杀死，而是被移除。当我们fork时——父状态被移除，子状态被加入队列。
+        如果我们真的不喜欢某个状态，它也可以手动触发。不会销毁状态描述符，但会相应地更新其状态和列表。
         :param state_id: ID of the state that was removed
         """
         logger.debug("did_remove_state: %s", state_id)
@@ -564,7 +585,7 @@ class IntrospectionAPIPlugin(Plugin):
     ):
         """
         Called upon each fork. Sets the children for each state.
-
+        在分支上调用。设置每个状态的子状态。
         :param state: The parent state
         :param expression: The expression we forked on
         :param solutions: Possible values of the expression
@@ -587,7 +608,7 @@ class IntrospectionAPIPlugin(Plugin):
     def will_solve_callback(self, state, constraints, expr, solv_func: str):
         """
         Called when we're about to ask the solver for something. Updates the status of the state accordingly.
-
+        当我们要问解算器什么东西的时候调用。相应地更新状态的状态。
         :param state: State asking for the solve
         :param constraints: Current constraint set used for solving
         :param expr: Expression to be solved
@@ -609,7 +630,7 @@ class IntrospectionAPIPlugin(Plugin):
     def did_solve_callback(self, state, constraints, expr, solv_func: str, solutions):
         """
         Called when we've finished solving. Sets the status of the state back to whatever it was.
-
+        当我们解决完问题的时候打电话。将状态的状态设置回原来的状态。
         :param state: State asking for the solve
         :param constraints: Current constraint set used for solving
         :param expr: Expression to be solved
@@ -634,7 +655,7 @@ class IntrospectionAPIPlugin(Plugin):
         """
         Called every n instructions, where n is config.core.execs_per_intermittent_cb. Calls the provided callback
         to update platform-specific information on the descriptor.
-
+        调用每n条指令，其中n为config.core.execs_per_intermittent_cb。调用提供的回调函数来更新描述符上特定于平台的信息。
         :param state: The state that raised the intermittent event
         :param update_cb: Callback provided by the caller that will set some platform-specific fields on the state
         descriptor. This could be PC for native, or something else for EVM
@@ -657,7 +678,7 @@ class IntrospectionAPIPlugin(Plugin):
     def did_terminate_state_callback(self, state, ex: Exception):
         """
         Capture TerminateState exceptions so we can get the messages attached
-
+        捕获TerminateState异常，这样我们就可以获得附加的消息
         :param state: State that was terminated
         :param ex: The TerminateState exception w/ the termination message
         """
@@ -675,6 +696,7 @@ class IntrospectionAPIPlugin(Plugin):
     def get_state_descriptors(self) -> typing.Dict[int, StateDescriptor]:
         """
         :return: the most up-to-date copy of the state descriptor dict available
+        :return:状态描述符字典的最新副本
         """
         with self.locked_context("manticore_state", dict) as context:
             out = context.copy()  # TODO: is this necessary to break out of the lock?
@@ -683,7 +705,7 @@ class IntrospectionAPIPlugin(Plugin):
     def did_kill_state_callback(self, state, ex: Exception):
         """
         Capture other state-killing exceptions so we can get the corresponding message
-
+        捕获其他状态终止异常，这样我们就可以得到相应的消息
         :param state: State that was killed
         :param ex: The exception w/ the termination message
         """
