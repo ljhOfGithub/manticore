@@ -106,6 +106,7 @@ class Detector(Plugin):
         """
         Get previously saved location获取先前保存的位置
         A location is composed of: address, pc, finding, at_init, condition
+        location对象包括：address, pc, finding, at_init, condition
         """
         return state.context.setdefault("{:s}.locations".format(self.name), {})[hash_id]
 
@@ -325,7 +326,10 @@ class DetectReentrancyAdvanced(Detector):
         # TODO Check addresses are normal accounts. Heuristics implemented here
         # assume target addresses wont execute code. i.e. won't detect a Reentrancy
         # attack in progess but only a potential attack
+        # 假设目标地址不会执行代码。也就是说，不会检测到重入
+        #正在进行的攻击，但只是潜在的攻击
         self._addresses = addresses
+
 
     @property
     def _read_storage_name(self):
@@ -576,7 +580,7 @@ class DetectIntegerOverflow(Detector):
 
 
 class DetectUnusedRetVal(Detector):
-    """Detects unused return value from internal transactions"""
+    """Detects unused return value from internal transactions检测内部交易中未使用的返回值"""
 
     ARGUMENT = "unused-return"
     HELP = "Unused internal transaction return values"
@@ -585,7 +589,7 @@ class DetectUnusedRetVal(Detector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._stack_name = "{:s}.stack".format(self.name)
+        self._stack_name = "{:s}.stack".format(self.name)#{:s}等价于%s
 
     def _add_retval_taint(self, state, taint):
         taints = state.context[self._stack_name][-1]
@@ -603,6 +607,7 @@ class DetectUnusedRetVal(Detector):
 
     def will_open_transaction_callback(self, state, tx):
         # Reset reading log on new human transactions
+        # 在新的人工交易上重置读取日志
         if tx.is_human:
             state.context[self._stack_name] = []
         state.context[self._stack_name].append(set())
@@ -610,6 +615,7 @@ class DetectUnusedRetVal(Detector):
     def did_close_transaction_callback(self, state, tx):
         world = state.platform
         # Check that all retvals were used in control flow
+        # 检查控制流程中是否使用了所有的返回值
         for taint in self._get_retval_taints(state):
             id_val = taint[7:]
             address, pc, finding, at_init, condition = self._get_location(state, id_val)
@@ -625,6 +631,7 @@ class DetectUnusedRetVal(Detector):
         if instruction.is_starttx:
             # A transactional instruction just returned so we add a taint to result
             # and add that taint to the set
+            # 一个事务性指令刚刚返回，因此我们将一个污染添加到结果中，并将该污染添加到集合中
             id_val = self._save_current_location(
                 state, "Returned value at {:s} instruction is not used".format(mnemonic)
             )
@@ -664,6 +671,7 @@ class DetectDelegatecall(Detector):
         mnemonic = instruction.semantics
 
         # If it executed a DELEGATECALL
+        #如果它执行了DELEGATECALL
         # TODO: Check the transaction was success
         # if blockchain.last_transaction.return_value:
         # TODO: check if any of the potential target addresses has code
@@ -715,6 +723,7 @@ class DetectUninitializedMemory(Detector):
         current_contract = state.platform.current_vm.address
 
         # concrete or symbolic write
+        # 具体的或象征性的书写
         for offset_i in range(size):
             state.context.setdefault("{:s}.initialized_memory".format(self.name), set()).add(
                 (current_contract, offset + offset_i)
@@ -724,6 +733,7 @@ class DetectUninitializedMemory(Detector):
 class DetectUninitializedStorage(Detector):
     """
     Detects uses of uninitialized storage
+    检测未初始化存储的使用
     """
 
     ARGUMENT = "uninitialized-storage"
@@ -734,6 +744,7 @@ class DetectUninitializedStorage(Detector):
     def did_evm_read_storage_callback(self, state, address, offset, value):
         if not state.can_be_true(value != 0):
             # Not initialized memory should be zero
+            # 没有初始化的内存应该为零
             return
         # check if offset is known
         cbu = True  # Can be unknown
