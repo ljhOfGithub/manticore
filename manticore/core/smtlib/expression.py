@@ -26,6 +26,7 @@ class ExpressionEvalError(SmtlibError):
 class XSlotted(type):
     """
     Metaclass that will propagate slots on multi-inheritance classes
+    将在多继承类上传播槽的元类
     Every class should define __xslots__ (instead of __slots__)
 
     class Base(object, metaclass=XSlotted, abstract=True):
@@ -1293,7 +1294,7 @@ class ArrayProxy(Array):
                     # 如果它是一个切片的代理，把切片也去掉
                     offset += array._slice_offset
                 else:
-                    # The index written to underlaying Array are displaced when sliced
+                    # The index written to underlaying Array are displaced when sliced写入底层数组的索引在切片时被移位
                     written.add(array.index - offset)
                 array = array.array
             assert isinstance(array, ArrayVariable)
@@ -1309,15 +1310,18 @@ class ArrayProxy(Array):
         if isinstance(index, Constant):
             for i in written:
                 # check if the concrete index is explicitly in written
+                #检查具体的索引是否显式写入
                 if isinstance(i, Constant) and index.value == i.value:
                     return BoolConstant(value=True)
 
                 # Build an expression to check if our concrete index could be the
                 # solution for anyof the used symbolic indexes
+                # 构建一个表达式来检查我们的具体索引是否可以是任何使用的符号索引的解
                 is_known_index = BoolOr(a=is_known_index.cast(index == i), b=is_known_index)
             return is_known_index
 
         # The index is symbolic we need to compare it agains it all
+        #索引是象征性的，我们需要比较它与所有
         for known_index in written:
             is_known_index = BoolOr(a=is_known_index.cast(index == known_index), b=is_known_index)
 
@@ -1365,6 +1369,7 @@ class ArraySelect(BitVec):
         self._operands = (array, index)
 
         # If taint was not forced by a keyword argument, calculate default
+        # 如果taint不是由关键字参数强制的，计算默认值
         kwargs.setdefault("taint", frozenset({y for x in self._operands for y in x.taint}))
 
         super().__init__(size=array.value_bits, **kwargs)
