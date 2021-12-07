@@ -5,7 +5,7 @@ sandshrew.py
     Unconstrained concolic execution tool for cryptographic verification
     utilizing Manticore as a backend for symbolic execution and Unicorn
     for concrete instruction emulation.
-
+    用于密码验证的无约束concolic执行工具，利用Manticore作为后端进行符号执行，Unicorn用于具体的指令仿真。
 """
 import os
 import string

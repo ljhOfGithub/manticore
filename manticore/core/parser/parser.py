@@ -1,4 +1,5 @@
 # Minimal INTEL assembler expression calculator
+#最小的英特尔汇编表达式计算器
 import ply.yacc as yacc
 import copy
 from ..smtlib import Operators
@@ -9,6 +10,7 @@ from ..smtlib import Operators
 #
 # tokenizer for a simple expression evaluator for
 # numbers and +,-,*,/
+# 用于数字和+、-、*、/的简单表达式求值器的记号生成器
 # ------------------------------------------------------------
 import ply.lex as lex
 import re
@@ -23,6 +25,7 @@ class ParserException(Exception):
 
 
 # List of token names.   This is always required
+#令牌名称列表。这是必须的
 tokens = (
     "NUMBER",
     "PLUS",
@@ -54,6 +57,7 @@ tokens = (
 )
 
 # Regular expression rules for simple tokens
+# 简单标记的正则表达式规则
 t_PLUS = r"\+"
 t_MINUS = r"-"
 t_TIMES = r"\*"
@@ -90,7 +94,7 @@ re_TYPE = re.compile(r"^(QWORD|DWORD|WORD|BYTE)$")
 re_PTR = re.compile(r"^PTR$")
 
 # A regular expression rule with some action code
-
+# 带有动作代码的正则表达式规则
 
 def t_TOKEN(t):
     "[a-zA-Z0-9]+"
@@ -114,7 +118,7 @@ def t_TOKEN(t):
 
 
 # Define a rule so we can track line numbers
-
+# 定义一个规则，以便我们可以跟踪行号
 
 def t_newline(t):
     r"\n+"
@@ -122,6 +126,7 @@ def t_newline(t):
 
 
 # A string containing ignored characters (spaces and tabs)
+# 包含被忽略字符(空格和制表符)的字符串
 t_ignore = " \t"
 
 # Error handling rule
@@ -302,6 +307,7 @@ def p_expression_ge(p):
 
 
 # Error rule for syntax errors
+#语法错误错误规则
 def p_error(p):
     print("Syntax error in input:", p)
 

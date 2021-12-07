@@ -9,7 +9,7 @@ def parse_arguments():
     ################################################################################
     # parse arguments
     parser = argparse.ArgumentParser(
-        description="Extract different statistic and information from a manticore workspace"
+        description="Extract different statistic and information from a manticore workspace"#从manticore工作区中提取不同的统计数据和信息
     )
     parser.add_argument(
         "--workspace",
