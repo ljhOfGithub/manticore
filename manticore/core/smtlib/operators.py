@@ -42,7 +42,7 @@ def CHR(s):
 def NOT(a):
     if isinstance(a, bool):
         return not a
-    if isinstance(a, (Bool, int)):
+    if isinstance(a, (Bool, int)):#按位取反
         return ~a
     return a == False
 
@@ -58,15 +58,15 @@ def AND(a, b, *others):
     return a & b
 
 
-def OR(a, b, *others):
+def OR(a, b, *others):#*others传入一个列表
     if len(others) > 0:
         b = OR(b, others[0], *others[1:])
     if isinstance(a, Bool):
         return a | b
     if isinstance(b, Bool):
         return b | a
-    result = a | b
-    if isinstance(result, (BitVec, int)):
+    result = a | b#都是bool
+    if isinstance(result, (BitVec, int)):#如果是BitVec或者int则true
         result = ITE(result != 0, True, False)
     return result
 
@@ -173,7 +173,7 @@ def CONCAT(total_size, *args):
         return result
 
 
-def ITE(cond, true_value, false_value):
+def ITE(cond, true_value, false_value):#if-then-else
     assert isinstance(true_value, (Bool, bool, BitVec, int))
     assert isinstance(false_value, (Bool, bool, BitVec, int))
     assert isinstance(cond, (Bool, bool))
@@ -192,7 +192,7 @@ def ITE(cond, true_value, false_value):
     return BoolITE(cond=cond, true=true_value, false=false_value)
 
 
-def ITEBV(size, cond, true_value, false_value):
+def ITEBV(size, cond, true_value, false_value):#
     if isinstance(cond, BitVec):
         cond = cond.Bool()
     if isinstance(cond, int):

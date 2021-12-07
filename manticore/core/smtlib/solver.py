@@ -9,6 +9,15 @@
 # sat       the current set of constraints is satisfiable and has at least one solution
 # unsat     the current set of constraints is impossible
 #
+#解算器
+#解决程序维护一个通过stdio连接到smtlib的进程。
+#它可以在4个主要状态:None, unknown, sat, unsat
+#还没有发送到smtlib进程。Al状态只是在python端
+# unknown是错误状态。之前发送的某些查询不成功或超时。
+#与smtlib进程的进一步交互可能会继续返回unknown
+# 引发异常。
+# sat当前约束集是可满足的，且至少有一个解
+# unsat当前约束是不可能的
 # It starts at None.
 # Once you Solver.check() it the status is changed to sat or unsat (or unknown+exception)
 # You can create new symbols operate on them. The declarations will be sent to the smtlib process when needed.

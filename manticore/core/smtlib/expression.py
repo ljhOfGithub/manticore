@@ -28,14 +28,14 @@ class XSlotted(type):
     Metaclass that will propagate slots on multi-inheritance classes
     将在多继承类上传播槽的元类
     Every class should define __xslots__ (instead of __slots__)
-
+    每个类都要定义__xslots__
     class Base(object, metaclass=XSlotted, abstract=True):
         pass
 
     class A(Base, abstract=True):
         __xslots__ = ('a',)
         pass
-
+    用tuple定义允许动态绑定的属性名称https://www.liaoxuefeng.com/wiki/1016959663602400/1017501655757856
     class B(Base, abstract=True):
         __xslots__ = ('b',)
         pass
@@ -76,7 +76,7 @@ class XSlotted(type):
 class Expression(object, metaclass=XSlotted, abstract=True):
     """Abstract taintable Expression."""
 
-    __xslots__: Tuple[str, ...] = ("_taint",)
+    __xslots__: Tuple[str, ...] = ("_taint",)# 冒号是类型注解，有_taint的元组，具体的Tuple[str, ...]见https://docs.python.org/zh-cn/3/library/typing.html类型别名
 
     def __init__(self, *, taint: Union[tuple, frozenset] = (), **kwargs):
         if self.__class__ is Expression:
@@ -131,6 +131,8 @@ def get_taints(arg, taint=None):
     Helper to list an object taints.帮助程序列出一个对象污染。
     :param arg: a value or Expression
     :param taint: a regular expression matching a taint value (eg. 'IMPORTANT.*'). If None, this function checks for any taint value.
+    :param arg:一个值或表达式
+    :param taint:匹配污染值的正则表达式(例如。“重要。*”)。如果为None，此函数将检查任何污染值。
     """
 
     if not issymbolic(arg):
@@ -173,7 +175,7 @@ def taint_with(arg, *taints, value_bits=256, index_bits=256):
 ###############################################################################
 # Booleans
 class Bool(Expression, abstract=True):
-    """Bool expressions represent symbolic value of truth"""
+    """Bool expressions represent symbolic value of truth Bool表达式代表真相的符号值"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
@@ -268,7 +270,7 @@ class BoolConstant(Bool):
 
 
 class BoolOperation(Bool, abstract=True):
-    """An operation that results in a Bool"""
+    """An operation that results in a Bool产生bool值的运算符"""
 
     __xslots__: Tuple[str, ...] = ("_operands",)
 
@@ -276,6 +278,7 @@ class BoolOperation(Bool, abstract=True):
         self._operands = operands
 
         # If taint was not forced by a keyword argument, calculate default
+        # 如果taint不是由关键字参数强制的，计算默认值
         kwargs.setdefault("taint", reduce(lambda x, y: x.union(y.taint), operands, frozenset()))
 
         super().__init__(**kwargs)
@@ -574,7 +577,7 @@ class BitVecConstant(BitVec):
 
 
 class BitVecOperation(BitVec, abstract=True):
-    """An operation that results in a BitVec"""
+    """An operation that results in a BitVec产生BitVec的操作符"""
 
     __xslots__: Tuple[str, ...] = ("_operands",)
 
@@ -1371,7 +1374,8 @@ class ArraySelect(BitVec):
         # If taint was not forced by a keyword argument, calculate default
         # 如果taint不是由关键字参数强制的，计算默认值
         kwargs.setdefault("taint", frozenset({y for x in self._operands for y in x.taint}))
-
+        # dict.setdefault(key, default=None) Python 字典 setdefault() 函数和 get()方法 类似, 如果键不存在于字典中，将会添加键并将值设为默认值。
+        # taint: 不变集合
         super().__init__(size=array.value_bits, **kwargs)
 
     @property
