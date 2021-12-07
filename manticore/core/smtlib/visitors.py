@@ -405,6 +405,7 @@ class ConstantFolderSimplifier(Visitor):
 
     def _visit_operation(self, expression, *operands):
         """constant folding, if all operands of an expression are a Constant do the math"""
+        """常量折叠，如果一个表达式的所有操作数都是常量，那么做数学运算"""
         operation = self.operations.get(type(expression), None)
         if operation is not None and all(isinstance(o, Constant) for o in operands):
             value = operation(*(x.value for x in operands))

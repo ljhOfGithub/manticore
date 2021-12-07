@@ -1,7 +1,7 @@
 import subprocess
 
 count = 0
-
+#GNU Debugger----gdb
 prompt = ""
 subproc = None
 _arch = None
@@ -23,7 +23,7 @@ def start(arch, argv, port=1234, _prompt="(gdb) "):
         subproc = subprocess.Popen(
             [gdb, argv[0]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
-    except OSError:
+    except OSError:#格式化字符串常量
         msg = f"'{gdb}' binary not found in PATH (needed for tracing)"
         raise RuntimeError(msg)
 
@@ -35,9 +35,9 @@ def start(arch, argv, port=1234, _prompt="(gdb) "):
 
 
 def correspond(text):
-    """Communicate with the child process without closing stdin."""
+    """Communicate with the child process without closing stdin.在不关闭stdin的情况下与子进程通信"""
     subproc.stdin.write(text)
-    subproc.stdin.flush()
+    subproc.stdin.flush()#输入text到子进程
     return drain()
 
 
@@ -77,6 +77,7 @@ def getCanonicalRegisters():
             registers[name] = int(hex_val, 0)
         else:
             # We just want the NZCV flags
+            #我们只想要NZCV标志
             registers[name] = int(hex_val, 0) & 0xF0000000
     return registers
 

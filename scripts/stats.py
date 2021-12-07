@@ -2,7 +2,8 @@ import sys, os, pickle, argparse
 
 
 # Process the data of a workspace and prints out some global information
-
+# 处理工作区的数据并打印出一些全局信息
+# 统计stats.py
 
 def parse_arguments():
     ################################################################################

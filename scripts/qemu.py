@@ -35,12 +35,13 @@ def get_lines(n=1):
 def parse_mmu_debug_output(s):
     d = {}
 
-    # Get guest address space
+    # Get guest address space获取客户地址空间
     d["reserved"] = int(s.pop(0).split()[1], 0)
     d["host_mmap_min_addr"] = int(s.pop(0).split("=")[1], 0)
     d["guest_base"] = int(s.pop(0).split()[1], 0)
 
     # get rid of mapping heading
+    #删除映射标题
     s.pop(0)
     d["maps"] = []
 

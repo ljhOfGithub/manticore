@@ -14,6 +14,7 @@ logger = logging.getLogger("TRACE")
 ## We need to keep some complex objects in between hook invocations so we keep them
 ## as globals. Tracing is inherently a single-threaded process, so using a
 ## manticore context would be heavier than needed.
+# 我们需要在钩子调用之间保留一些复杂的对象，所以我们将它们作为全局变量。跟踪本质上是一个单线程进程，因此使用manticore上下文可能比实际需要的更繁重。
 stack_top = 0xC0000000
 stack_size = 0x20000
 initialized = False
@@ -40,7 +41,7 @@ def dump_gdb(cpu, addr, count):
 def cmp_regs(cpu, should_print=False):
     """
     Compare registers from a remote gdb session to current mcore.
-
+    比较来自远程gdb会话的寄存器和当前内核的寄存器。
     :param manticore.core.cpu Cpu: Current cpu
     :param bool should_print: Whether to print values to stdout
     :return: Whether or not any differences were detected
@@ -66,6 +67,7 @@ def cmp_regs(cpu, should_print=False):
 
 def pre_mcore(state):
     # Start recording memory writes
+    # 开始记录内存写入
     if state.cpu.instruction.mnemonic.lower() == "svc":
         state.cpu.memory.push_record_writes()
 
@@ -73,10 +75,12 @@ def pre_mcore(state):
 def post_mcore(state, last_instruction):
     """
     Handle syscalls (import memory) and bail if we diverge
+    处理系统调用(导入内存)和保释如果我们分歧
     """
     global in_helper
 
     # Synchronize qemu state to manticore's after a system call
+    # 在系统调用后同步qemu状态到manticore
     if last_instruction.mnemonic.lower() == "svc":
         # Synchronize all writes that have happened
         writes = state.cpu.memory.pop_record_writes()
@@ -102,6 +106,7 @@ def post_mcore(state, last_instruction):
 
     # If we executed a few instructions of a helper, we need to sync Manticore's
     # state to GDB as soon as we stop executing a helper.
+    # 如果我们执行了helper的一些指令，我们需要在停止执行helper时将Manticore的状态同步到GDB。
     if in_helper:
         for reg in state.cpu.canonical_registers:
             if reg.endswith("PSR"):
