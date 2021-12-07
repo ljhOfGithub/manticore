@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class Detector(Plugin):
     # argument that needs to be passed to --detect to use given detector
+    # #参数需要传递给——detect来使用给定的检测器
     ARGUMENT: Optional[str] = None
     # help string
     HELP: Optional[str] = None
@@ -50,6 +51,7 @@ class Detector(Plugin):
     def add_finding(self, state, address, pc, finding, at_init, constraint=True):
         """
         Logs a finding at specified contract and assembler line.
+        在指定的合同和汇编器行记录发现的情况。
         :param state: current state
         :param address: contract address of the finding
         :param pc: program counter of the finding
@@ -86,6 +88,7 @@ class Detector(Plugin):
         """
         Save current location in the internal locations list and returns a textual id for it.
         This is used to save locations that could later be promoted to a finding if other conditions hold
+        将当前位置保存在内部位置列表中，并为其返回一个文本id。这用于保存一些位置，如果其他条件不变，这些位置以后可能会被提升为发现
         See _get_location()
         :param state: current state
         :param finding: textual description of the finding
@@ -101,7 +104,7 @@ class Detector(Plugin):
 
     def _get_location(self, state, hash_id):
         """
-        Get previously saved location
+        Get previously saved location获取先前保存的位置
         A location is composed of: address, pc, finding, at_init, condition
         """
         return state.context.setdefault("{:s}.locations".format(self.name), {})[hash_id]
@@ -115,8 +118,10 @@ class DetectEnvInstruction(Detector):
     Detect the usage of instructions that query environmental/block information:
     BLOCKHASH, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, ORIGIN, GASPRICE
 
+    检测查询环境/块信息的指令的使用情况:Blockhash, coinbase，时间戳，数量，难度，汽油限制，来源，汽油价格
     Sometimes environmental information can be manipulated. Contracts should avoid
     using it. Unless special situations. Notably to programatically detect human transactions
+    有时环境信息可以被操纵。合同应避免使用它。除非特殊情况。尤其是以编程方式检测人工事务
     `sender == origin`
     """
 
@@ -165,6 +170,7 @@ class DetectExternalCallAndLeak(Detector):
 
             if issymbolic(dest_address):
                 # We assume dest_address is symbolic because it came from symbolic tx data (user input argument)
+                # 我们假设dest_address是象征性的，因为它来自于象征性的tx data(用户输入参数)
                 self.add_finding_here(
                     state,
                     f"Reachable ether leak to sender via argument",
@@ -180,11 +186,13 @@ class DetectExternalCallAndLeak(Detector):
                 # we report nothing if it can't go to > 1 other addresses since that means the code constrained
                 # to a specific address at some point, and that was probably intentional. attacker has basically
                 # no control.
-
+                #它不能到发送者那里，但它可以到任意地址吗?(> 1其他地址?)如果它不能去> 1其他地址，我们什么也不报告，因为这意味着代码在某些时候约束到一个特定的地址，这可能是有意的。
+                #攻击者基本上没有控制权
                 possible_destinations = state.solve_n(dest_address, 2)
                 if len(possible_destinations) > 1:
                     # This might be a false positive if the dest_address can't actually be solved to anything
                     # useful/exploitable, even though it can be solved to more than 1 thing
+                    # 如果dest_address实际上不能被解决到任何有用的/可利用的东西，这可能是一个假阳性，即使它可以解决到不止一个东西
                     self.add_finding_here(
                         state,
                         f"Reachable ether leak to user controlled address via argument",
@@ -219,7 +227,7 @@ class DetectInvalid(Detector):
         INVALID instructions are originally designated to signal exceptional code.
         As in practice the INVALID instruction is used in different ways this
         detector may Generate a great deal of false positives.
-
+        无效指令最初是用来指示异常代码的。在实践中，INVALID指令以不同的方式使用，这个检测器可能会产生大量的误报。
         :param only_human: if True report only INVALID at depth 0 transactions
         """
         super().__init__(**kwargs)
@@ -238,6 +246,7 @@ class DetectReentrancySimple(Detector):
     Simple detector for reentrancy bugs.
     Alert if contract changes the state of storage (does a write) after a call with >2300 gas to a user controlled/symbolic
     external address or the msg.sender address.
+    用于重入bug的简单检测器。如果在用>2300 gas调用用户控制的/符号外部地址或msg之后，合同改变了存储状态(进行写入)，则发出警报。发送方地址。
     """
 
     ARGUMENT = "reentrancy"
@@ -266,6 +275,7 @@ class DetectReentrancySimple(Detector):
 
             # flag any external call that's going to a symbolic/user controlled address, or that's going
             # concretely to the sender's address
+            # 标记任何要到符号/用户控制地址的外部调用，或者具体到发送者地址的外部调用
             if issymbolic(dest_address) or msg_sender == dest_address:
                 state.context.get(self._context_key, []).append((pc, is_enough_gas))
 
@@ -274,6 +284,7 @@ class DetectReentrancySimple(Detector):
 
         # if we're here and locs has stuff in it. by definition this state has
         # encountered a dangerous call and is now at a write.
+        # 如果我们在这里，而locs有东西在里面。根据定义，这个状态遇到了一个危险的调用，现在正在写入。
         for callpc, gas_constraint in locs:
             addr = state.platform.current_vm.address
             at_init = state.platform.current_transaction.sort == "CREATE"
@@ -291,13 +302,17 @@ class DetectReentrancyAdvanced(Detector):
     """
     Detector for reentrancy bugs.
     Given an optional concrete list of attacker addresses, warn on the following conditions.
-
+    重入bug检测器。给定一个可选的攻击者地址列表，在以下条件下发出警告。
     1) A _successful_ call to an attacker address (address in attacker list), or any human account address
     (if no list is given). With enough gas (>2300).
 
     2) A SSTORE after the execution of the CALL.
 
     3) The storage slot of the SSTORE must be used in some path to control flow
+
+    1)成功调用攻击者地址(攻击者列表中的地址)，或任何人工账户地址(如果没有给出列表)。有足够的气体(>2300)。
+    2)执行CALL后的SSTORE。
+    3)必须使用SSTORE的存储槽在某个路径上控制流
     """
 
     ARGUMENT = "reentrancy-adv"
@@ -318,6 +333,7 @@ class DetectReentrancyAdvanced(Detector):
 
     def will_open_transaction_callback(self, state, tx):
         # Reset reading log on new human transactions
+        # 在新的人工事务上重置读取日志
         if tx.is_human:
             state.context[self._read_storage_name] = set()
             state.context["{:s}.locations".format(self.name)] = dict()
@@ -325,12 +341,14 @@ class DetectReentrancyAdvanced(Detector):
     def did_close_transaction_callback(self, state, tx):
         world = state.platform
         # Check if it was an internal tx
+        # #检查是否是一个内部交易
         if not tx.is_human:
-            # Check is the tx was successful
+            # Check is the tx was successful交易是否成功
             if tx.result:
-                # Check if gas was enough for a reentrancy attack
+                # Check if gas was enough for a reentrancy attack gas是否足够进行重入攻击
                 if state.can_be_true(Operators.UGE(tx.gas, 2300)):
                     # Check if target address is attaker controlled
+                    #检查目标地址是否受攻击者控制
                     if (
                         self._addresses is None
                         and not world.get_code(tx.address)
@@ -365,6 +383,7 @@ class DetectReentrancyAdvanced(Detector):
     def did_evm_write_storage_callback(self, state, address, offset, value):
         # if in potential DAO check that write to storage values read before
         # the "send"
+        # 如果在潜在的DAO检查写存储值读取之前的“发送”
         for location, reads in self._get_location_and_reads(state):
             for address_i, offset_i in reads:
                 if address_i == address:
@@ -375,6 +394,7 @@ class DetectReentrancyAdvanced(Detector):
 class DetectIntegerOverflow(Detector):
     """
     Detects potential overflow and underflow conditions on ADD and SUB instructions.
+    在ADD和SUB指令上检测潜在的溢出和下溢条件。
     """
 
     ARGUMENT = "overflow"
@@ -386,6 +406,7 @@ class DetectIntegerOverflow(Detector):
     def _signed_sub_overflow(state, a, b):
         """
         Sign extend the value to 512 bits and check the result can be represented
+        符号将值扩展到512位，检查结果是否可以表示
          in 256. Following there is a 32 bit excerpt of this condition:
         a  -  b   -80000000 -3fffffff -00000001 +00000000 +00000001 +3fffffff +7fffffff
         +80000000    False    False    False    False     True     True     True
@@ -619,9 +640,13 @@ class DetectUnusedRetVal(Detector):
 class DetectDelegatecall(Detector):
     """
     Detects DELEGATECALLs to controlled addresses and or with controlled function id.
+    检测到受控地址和受控函数id的DELEGATECALLs。
     This detector finds and reports on any delegatecall instruction any the following propositions are hold:
         * the destination address can be controlled by the caller
         * the first 4 bytes of the calldata are controlled by the caller
+    该检测器发现并报告任何委托调用指令中有以下命题被持有:
+        *目的地址可以由调用者控制
+        * calldata的前4个字节由调用方控制
     """
 
     ARGUMENT = "delegatecall"
@@ -663,6 +688,7 @@ class DetectDelegatecall(Detector):
 class DetectUninitializedMemory(Detector):
     """
     Detects uses of uninitialized memory
+    检测未初始化内存的使用
     """
 
     ARGUMENT = "uninitialized-memory"
@@ -728,8 +754,9 @@ class DetectUninitializedStorage(Detector):
 class DetectRaceCondition(Detector):
     """
     Detects possible transaction race conditions (transaction order dependencies)
-
+    检测可能的事务竞争条件(事务顺序依赖关系)
     The RaceCondition detector might not work properly for contracts that have only a fallback function.
+    对于只有回退函数的契约，raccondition检测器可能无法正常工作。
     See the detector's implementation and it's `_in_user_func` method for more information.
     """
 
@@ -860,6 +887,7 @@ class DetectRaceCondition(Detector):
 class DetectManipulableBalance(Detector):
     """
     Detects the use of manipulable balance in strict compare.
+    检测在严格比较中可操作余额的使用。
     """
 
     ARGUMENT = "lockdrop"
