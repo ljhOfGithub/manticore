@@ -17,7 +17,7 @@ from enum import Enum
 import os
 import yaml
 
-_groups: Dict[str, "_Group"] = {}
+_groups: Dict[str, "_Group"] = {}#
 
 
 logger = logging.getLogger(__name__)
@@ -73,6 +73,7 @@ class _Group:
         group.some_var
 
     Can also be used with a `with-statement context` so it would revert the value, e.g.:
+    也可以和' with-statement context '一起使用，这样它会恢复值，例如:
     group.var = 100
     with group.temp_vals():
         group.var = 123
@@ -98,15 +99,16 @@ class _Group:
         """
         Add a variable named |name| to this value group, optionally giving it a
         default value and a description.
-
+        将名为|name|的变量添加到该值组，可选地为其提供默认值和描述。
         Variables must be added with this method before they can be set or read.
         Reading a variable replaces the variable that was defined previously, but
         updates the description if a new one is set.
-
+        在设置或读取变量之前，必须使用此方法添加变量。读取变量将替换之前定义的变量，但如果设置了新的变量，则更新描述。
         """
         if name in self._vars:
             # Be kind when double-adding the same exact config
-            existing = self._vars[name]
+            # 请在重复添加相同的配置时使用
+            existing = self._vars[name]#如果配置都相同则不做操作否则报错
             if default == existing.default and description == existing.description:
                 return
             raise ConfigError(f"{self.name}.{name} already defined.")
@@ -120,7 +122,7 @@ class _Group:
     def update(self, name: str, value=None, default=None, description: str = None):
         """
         Like add, but can tolerate existing values; also updates the value.
-
+        像添加，但能容忍现有的价值;也更新值。
         Mostly used for setting fields from imported INI files and modified CLI flags.
         """
         if name in self._vars:
