@@ -484,6 +484,9 @@ class Workspace:
         :param state_id: The state reference of what to load
         :return: The deserialized state
         :rtype: State
+        :param state_id:加载内容的状态引用
+        :return:反序列化状态
+        :rtype: State
         """
         return self._store.load_state(f"{self._prefix}{state_id:08x}{self._suffix}", delete=delete)
 

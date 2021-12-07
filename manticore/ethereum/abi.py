@@ -26,6 +26,7 @@ class ABI:
     The Application Binary Interface is the standard way to interact with
     contracts in the Ethereum ecosystem, both from outside the blockchain
     and for contract-to-contract interaction.
+    这个类包含处理ABI的方法。应用程序二进制接口是以太坊生态系统中与合约交互的标准方式，无论是来自区块链外部的合约，还是用于合约之间的交互。
 
     """
 
@@ -67,6 +68,7 @@ class ABI:
     def function_call(type_spec, *args):
         """
         Build transaction data from function signature and arguments
+        从函数签名和参数构建事务数据
         """
         m = re.match(r"(?P<name>[a-zA-Z_][a-zA-Z_0-9]*)(?P<type>\(.*\))", type_spec)
         if not m:
@@ -82,6 +84,7 @@ class ABI:
     def serialize(ty, *values, **kwargs):
         """
         Serialize value using type specification in ty.
+        在ty中使用类型规范序列化值。
         ABI.serialize('int256', 1000)
         ABI.serialize('(int, int256)', 1000, 2000)
         """
@@ -89,6 +92,7 @@ class ABI:
             parsed_ty = abitypes.parse(ty)
         except Exception as e:
             # Catch and rebrand parsing errors
+            # 捕获并重新标记解析错误
             raise EthereumError(str(e))
 
         if parsed_ty[0] != "tuple":
@@ -100,6 +104,7 @@ class ABI:
         else:
             # implement type forgiveness for bytesM/string types
             # allow python strs also to be used for Solidity bytesM/string types
+            # 实现bytesM/string类型的类型宽恕，允许python string也用于solid的bytesM/string类型
             values = tuple(val.encode() if isinstance(val, str) else val for val in values)
 
         result, dyn_result = ABI._serialize(parsed_ty, values)
@@ -150,7 +155,7 @@ class ABI:
     def _serialize_bytes(value):
         """
         Serializes the value and pads to multiple of 32 bytes
-
+        将值序列化并填充为32字节的倍数
         :param value:
         :type value: str or bytearray or Array
         """
@@ -197,6 +202,7 @@ class ABI:
     def function_selector(method_name_and_signature):
         """
         Makes a function hash id from a method signature
+        根据方法签名生成函数哈希id
         """
         s = sha3.keccak_256()
         s.update(method_name_and_signature.encode())
@@ -272,6 +278,7 @@ class ABI:
     def _serialize_uint(value, size=32, padding=0):
         """
         Translates a python integral or a BitVec into a 32 byte string, MSB first
+        将python整数或BitVec转换为32字节的字符串，先转换为MSB
         """
         if size <= 0 or size > 32:
             raise ValueError
@@ -284,6 +291,7 @@ class ABI:
             # Help mypy out. Can remove this by teaching it how issymbolic works
             assert isinstance(value, BitVec)
             # FIXME This temporary array variable should be obtained from a specific constraint store
+            # 如果代码中有FIXME标识，说明标识处代码需要修正，甚至代码是错误的，不能工作，需要修复，如何修正会在说明中简略说明。
             buffer = ArrayVariable(
                 index_bits=256, index_max=32, value_bits=8, name="temp{}".format(uuid.uuid1())
             )
@@ -308,6 +316,7 @@ class ABI:
     def _serialize_int(value: typing.Union[int, BitVec], size=32, padding=0):
         """
         Translates a signed python integral or a BitVec into a 32 byte string, MSB first
+        将带符号的python整数或BitVec转换为32字节的字符串，先转换为MSB
         """
         if size <= 0 or size > 32:
             raise ValueError
@@ -377,7 +386,7 @@ class ABI:
     def _deserialize_int(data: typing.Union[bytearray, bytes, Array], nbytes=32, padding=0):
         """
         Read a `nbytes` bytes long big endian signed integer from `data` starting at `offset`
-
+        从' data '从' offset '开始读取一个' nbytes '字节长的大端有符号整数
         :param data: sliceable buffer; symbolic buffer of Eth ABI encoded data
         :param nbytes: number of bytes to read starting from least significant byte
         :rtype: int or Expression
