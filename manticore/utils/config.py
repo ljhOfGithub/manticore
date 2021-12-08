@@ -138,6 +138,7 @@ class _Group:
     def get_description(self, name: str) -> str:
         """
         Return the description, or a help string of variable identified by |name|.
+        返回描述或由|名称|标识的变量的帮助字符串。
         """
         if name not in self._vars:
             raise ConfigError(f"{self.name}.{name} not defined.")
@@ -147,6 +148,7 @@ class _Group:
     def updated_vars(self):
         """
         Return all vars that were explicitly set or updated with new values.
+        返回所有使用新值显式设置或更新的变量。
         """
         return filter(lambda x: x.was_set, self._vars.values())
 
